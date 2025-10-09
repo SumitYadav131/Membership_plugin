@@ -106,3 +106,64 @@ global $wpdb; ?>
     });
   </script>
 
+<h1>Paypal Testing </h1>
+<?php
+// create-order.php
+$clientId = '';
+$secret = '';
+
+// Get access token first (same as above)
+$ch = curl_init();
+curl_setopt($ch, CURLOPT_URL, "https://api-m.sandbox.paypal.com/v1/oauth2/token");
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_USERPWD, "$clientId:$secret");
+curl_setopt($ch, CURLOPT_POSTFIELDS, "grant_type=client_credentials");
+$tokenResponse = curl_exec($ch);
+curl_close($ch);
+$accessToken = json_decode($tokenResponse, true)['access_token'];
+
+// Create order
+$orderData = [
+    'intent' => 'CAPTURE',
+    'purchase_units' => [[
+        'amount' => [
+            'currency_code' => 'USD',
+            'value' => '20.00'
+        ]
+    ]],
+    'application_context' => [
+        'return_url' => 'http://alqimi.mydevitsolution.com/success.php',
+        'cancel_url' => 'http://alqimi.mydevitsolution.com/cancel.php'
+    ]
+];
+
+$ch = curl_init("https://api-m.sandbox.paypal.com/v2/checkout/orders");
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    "Content-Type: application/json",
+    "Authorization: Bearer $accessToken"
+]);
+curl_setopt($ch, CURLOPT_POST, true);
+curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($orderData));
+
+$response = curl_exec($ch);
+curl_close($ch);
+
+$order = json_decode($response, true);
+print_r($order);
+// Redirect user to PayPal approval URL
+$approvalUrl = '';
+foreach($order['links'] as $link){
+    if($link['rel'] === 'approve'){
+        $approvalUrl = $link['href'];
+        break;
+    }
+}
+
+if($approvalUrl){
+    header("Location: $approvalUrl");
+    exit;
+} else {
+    echo "Error creating PayPal order";
+    print_r($order);
+}
