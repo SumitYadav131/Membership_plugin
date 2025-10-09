@@ -9,7 +9,7 @@ header('Content-Type: application/json');
 require_once '/home1/mydevits/public_html/alqimi/wp-content/plugins/Membership/lib/init.php';
 
 // Set your secret key (server-side only)
-\Stripe\Stripe::setApiKey('sk_test_51JeCtcSBo56wci5DRXTInJi6EjyQVvLrFiM1H8CpFAklVdKXEevdbItOnS3smrWZuhdm6PFknppO7J5qwnSVF3mW00ywvc7RmJ'); // <-- REPLACE
+\Stripe\Stripe::setApiKey(''); // <-- REPLACE
 
 // Example: read amount, currency from POST (always validate/sanitize in real app)
 $input = json_decode(file_get_contents('php://input'), true);
