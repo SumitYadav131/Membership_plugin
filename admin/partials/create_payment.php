@@ -2,7 +2,7 @@
 // create-payment-intent.php
 header('Content-Type: application/json');
 
-// include Stripe lib (adjust path if different)
+// include Stripe lib (adjust path if different)sgi
 
 
 
