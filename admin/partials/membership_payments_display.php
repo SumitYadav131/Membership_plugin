@@ -52,7 +52,7 @@
 <div class="wrap members-cm gateway-settings">
   <h1>Membership Gateway Settings</h1>
 
-  <div class="tabs">
+  <div class="tabs home">
     <div class="tab-button active" onclick="showTab(event, 'g-setting')">Genral Setting</div>
     <div class="tab-button" onclick="showTab(event, 'paypal-setting')">Paypal API</div>
     <div class="tab-button" onclick="showTab(event, 'stripe-setting')">Stripe Setting</div>
