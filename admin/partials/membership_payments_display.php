@@ -24,7 +24,7 @@
 		  
 		  // Paypal 
 	      $paypal_client_id = $settings->get_value( 'paypal_client_id' );
-		  echo $paypal_secret = $settings->get_value( 'paypal_secret' );
+		  $paypal_secret = $settings->get_value( 'paypal_secret' );
 		  $paypal_webhook_url = $settings->get_value( 'paypal_webhook_url' );
 		  $paypal_mode = $settings->get_value( 'paypal_mode' );
 		 
