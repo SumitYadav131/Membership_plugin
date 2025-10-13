@@ -24,33 +24,9 @@ if (isset($_POST['add_membership_level'])) {
   $account_status = sanitize_text_field($_POST['default-status']);
   $email_activation = isset($_POST['email-activation']) ? 1 : 0;
   $redirect_url = esc_url_raw($_POST['redirect-page'] ?? '');
-  $access_type = sanitize_text_field($_POST['access_duration']);
+  $access_type = sanitize_text_field($_POST['recurring_time']);
   // Determine Access Duration
-  if (isset($_POST['access_duration'])) {
-    $access_type = 'no_expiry';
-    $access_value = 0;
-    $fixed_expiry = null;
-  } elseif (isset($_POST['days'])) {
-    $access_type = 'days';
-    $access_value = intval($_POST['days_value']);
-    $fixed_expiry = null;
-  } elseif (isset($_POST['weeks'])) {
-    $access_type = 'weeks';
-    $access_value = intval($_POST['weeks_value']);
-    $fixed_expiry = null;
-  } elseif (isset($_POST['months'])) {
-    $access_type = 'months';
-    $access_value = intval($_POST['months_value']);
-    $fixed_expiry = null;
-  } elseif (isset($_POST['years'])) {
-    $access_type = 'years';
-    $access_value = intval($_POST['years_value']);
-    $fixed_expiry = null;
-  } elseif (isset($_POST['date'])) {
-    $access_type = 'fixed_date';
-    $access_value = 0;
-    $fixed_expiry = sanitize_text_field($_POST['fixed_date']);
-  }
+ 
 $access_value = 'years';
  $fixed_expiry = '30';
   $wpdb->insert($table_name, [
@@ -156,37 +132,23 @@ $access_value = 'years';
         </td>
       </tr>
       <tr>
-  <th>Access Duration <span style="color:red">*</span></th>
+  <th>Recurring Duration <span style="color:red">*</span></th>
   <td>
-    <label>
-      <input type="radio" name="access_duration" value="no_expiry" checked>
-      No Expiry <span class="desc">(Access will not expire until cancelled)</span>
-    </label><br>
+  
 
     <label>
-      <input type="radio" name="access_duration" value="days">
-      Expire After <input type="number" placeholder="Days">
+      
+     
+	  <select name="recurring_time" id="recurring_time">
+	      <option value="">None</option>
+		  <option value="weekly">weekly</option>
+		  <option value="monthly">monthly</option>
+		  <option value="yearly">yearly</option>
+		  
+	  </select>
     </label><br>
 
-    <label>
-      <input type="radio" name="access_duration" value="weeks">
-      Expire After <input type="number" placeholder="Weeks"> Weeks
-    </label><br>
-
-    <label>
-      <input type="radio" name="access_duration" value="months">
-      Expire After <input type="number" placeholder="Months"> Months
-    </label><br>
-
-    <label>
-      <input type="radio" name="access_duration" value="years">
-      Expire After <input type="number" placeholder="Years"> Years
-    </label><br>
-
-    <label>
-      <input type="radio" name="access_duration" value="fixed_date">
-      Fixed Date Expiry <input type="date" value="2025-08-05">
-    </label>
+   
   </td>
 </tr>
 

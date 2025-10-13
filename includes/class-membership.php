@@ -75,10 +75,12 @@ class Membership {
 		$this->plugin_name = 'membership';
         //Admin menu hook.
         add_action('admin_menu', array(&$this, 'plugin_menu'));
+		add_action('save_post', array(&$this, 'save_postdata'));
 		$this->load_dependencies();
 		$this->set_locale();
 		$this->define_admin_hooks();
 		$this->define_public_hooks();
+		
 
 	}
 
@@ -227,6 +229,7 @@ class Membership {
         add_submenu_page($menu_parent_slug, __("Payments", 'my-membership'), __("Payments", 'my-membership'), 'manage_options', 'my_wp_membership_payments', array(&$this, "admin_payments_menu"));
         add_submenu_page($menu_parent_slug, __("Tools", 'my-membership'), __("Tools", 'my-membership'), 'manage_options', 'my_wp_membership_tools', array(&$this, "admin_tools_menu"));
         add_submenu_page($menu_parent_slug, __("Reports", 'my-membership'), __("Reports", 'my-membership'), 'manage_options', 'my_wp_membership_reports', array(&$this, "admin_reports_menu"));
+		$this->meta_box();
 
        
     }
@@ -275,5 +278,76 @@ class Membership {
         include_once(MEMBERSHIP_PATH. 'admin/partials/membership_tools_display.php');
        
     }
+	
+	 public function meta_box() {
+        if (function_exists('add_meta_box')) {
+            $post_types = get_post_types();
+            foreach ($post_types as $post_type => $post_type) {
+                add_meta_box('swpm_sectionid', __('MD Membership Protection', 'simple-membership'), array(&$this, 'inner_custom_box'), $post_type, 'advanced');
+            }
+        } else {//older version doesn't have custom post type so modification isn't needed.
+            add_action('dbx_post_advanced', array(&$this, 'show_old_custom_box'));
+            add_action('dbx_page_advanced', array(&$this, 'show_old_custom_box'));
+        }
+    }
+	
+	 public function inner_custom_box() {
+        global $post, $wpdb;
+        $id = $post->ID;
+        
+  
+		$is_protected = get_post_meta($post_id, '_swpm_protected');
+	    $default_membership_level = array();
+	    
+
+		//Nonce input
+        echo '<input type="hidden" name="swpm_post_protection_box_nonce" value="' . wp_create_nonce('swpm_post_protection_box_nonce_action') . '" />';
+
+        // The actual fields for data entry
+        echo '<h4>' . __("Do you want to protect this content?", 'simple-membership') . '</h4>';
+        echo '<input type="radio" ' . ((!$is_protected) ? 'checked' : "") . '  name="swpm_protect_post" value="1" /> ' . __('No, Do not protect this content.', 'simple-membership') . '<br/>';
+        echo '<input type="radio" ' . (($is_protected) ? 'checked' : "") . '  name="swpm_protect_post" value="2" /> ' . __('Yes, Protect this content.', 'simple-membership') . '<br/>';
+        
+
+        echo '<h4>' . __("Select the membership level that can access this content:", 'simple-membership') . "</h4>";
+        $query = "SELECT * FROM " . $wpdb->prefix . "md_membership_levels WHERE  id !=1 ";
+        $levels = $wpdb->get_results($query, ARRAY_A);
+        foreach ($levels as $level) {
+			echo $is_checked = get_post_meta($post_id, '_swpm_protection_levels', true);
+
+            echo '<input type="checkbox" ' . ($is_checked ? "checked='checked'" : "") .
+            ' name="swpm_protection_level[' . $level['id'] . ']" value="' . $level['id'] . '" /> ' . $level['name'] . "<br/>";
+        }
+    }
+	
+	 public function save_postdata($post_id) {
+		// Check if nonce is set and valid
+		if (!isset($_POST['swpm_post_protection_box_nonce']) || !wp_verify_nonce($_POST['swpm_post_protection_box_nonce'], 'swpm_post_protection_box_nonce_action')) {
+			return;
+		}
+
+		// Check if this is an autosave
+		if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return;
+
+		// Don't save on revisions
+		if (wp_is_post_revision($post_id)) return;
+
+		// Ensure the post data is valid
+		if (isset($_POST['swpm_protect_post'])) {
+			// Protect or not protect the post
+			$is_protected = $_POST['swpm_protect_post'] == '2' ? '1' : '0';
+			update_post_meta($post_id, '_swpm_protected', $is_protected);
+		}
+
+		// Save the membership levels that can access this post
+		if (isset($_POST['swpm_protection_level']) && is_array($_POST['swpm_protection_level'])) {
+			$protection_levels = array_map('intval', $_POST['swpm_protection_level']);
+			update_post_meta($post_id, '_swpm_protection_levels', $protection_levels);
+		} else {
+			// If no levels are selected, remove any existing protection levels
+			delete_post_meta($post_id, '_swpm_protection_levels');
+		}
+	}
+
 
 }

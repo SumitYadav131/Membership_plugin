@@ -24,7 +24,7 @@
 		  
 		  // Paypal 
 	      $paypal_client_id = $settings->get_value( 'paypal_client_id' );
-		  $paypal_secret = $settings->get_value( 'paypal_secret' );
+		   $paypal_secret = $settings->get_value( 'paypal_secret' );
 		  $paypal_webhook_url = $settings->get_value( 'paypal_webhook_url' );
 		  $paypal_mode = $settings->get_value( 'paypal_mode' );
 		 
@@ -34,14 +34,26 @@
             $settings->set_value('stripe_webhook_url' ,( isset($_POST['stripe_webhook_url']) ? sanitize_text_field($_POST['stripe_webhook_url']) : ''));
             $settings->set_value('stripe_mode' ,( isset($_POST['stripe_mode']) ? sanitize_text_field($_POST['stripe_mode']) : ''));
 			
-			$settings->set_value('paypal_client_id' ,( isset($_POST['paypal_client_id']) ? sanitize_text_field($_POST['paypal_client_id']) : ''));
-			$settings->set_value('paypal_secret' ,( isset($_POST['paypal_secret']) ? sanitize_text_field($_POST['paypal_secret']) : ''));
-			$settings->set_value('paypal_mode' ,( isset($_POST['paypal_mode']) ? sanitize_text_field($_POST['paypal_mode']) : ''));
-			$settings->set_value('paypal_webhook_url' ,( isset($_POST['paypal_webhook_url']) ? sanitize_text_field($_POST['paypal_webhook_url']) : ''));
+			
 
             $settings->save();
             echo '<div class="notice notice-success"><p>' . __('Strip API settings updated successfully.', 'simple-membership') . '</p></div>';
         }
+		if (isset($_POST['paypal-settings-submit']) && check_admin_referer('paypal-settings-nonce')) {
+			$settings->set_value('paypal_client_id' ,( isset($_POST['paypal_client_id']) ? sanitize_text_field($_POST['paypal_client_id']) : ''));
+			$settings->set_value('paypal_secret' ,( isset($_POST['paypal_secret']) ? sanitize_text_field($_POST['paypal_secret']) : ''));
+			$settings->set_value('paypal_mode' ,( isset($_POST['paypal_mode']) ? sanitize_text_field($_POST['paypal_mode']) : ''));
+			$settings->set_value('paypal_webhook_url' ,( isset($_POST['paypal_webhook_url']) ? sanitize_text_field($_POST['paypal_webhook_url']) : ''));
+			 $settings->save();
+			 echo '<div class="notice notice-success"><p>' . __('Paypal API settings updated successfully.', 'simple-membership') . '</p></div>';
+			
+		}
+		if (isset($_POST['genral-settings-submit']) && check_admin_referer('genral-settings-nonce')) {
+			
+			
+		}
+		
+		
 		
 		
 
@@ -52,7 +64,7 @@
 <div class="wrap members-cm gateway-settings">
   <h1>Membership Gateway Settings</h1>
 
-  <div class="tabs home">
+  <div class="tabs">
     <div class="tab-button active" onclick="showTab(event, 'g-setting')">Genral Setting</div>
     <div class="tab-button" onclick="showTab(event, 'paypal-setting')">Paypal API</div>
     <div class="tab-button" onclick="showTab(event, 'stripe-setting')">Stripe Setting</div>
@@ -111,8 +123,8 @@
         </tr>
       </tbody>
     </table>
-
-    <button type="submit" name="strip-settings-submit" class="button button-primary" fdprocessedid="182mtc">Save Changes</button>  
+<?php wp_nonce_field('genral-settings-nonce');?>
+    <button type="submit" name="genral-settings-submit" class="button button-primary" fdprocessedid="182mtc">Save Changes</button>  
       
     </form>
   </div>
@@ -153,8 +165,8 @@
       </tr>
     </table>
     <p class="submit">
-    <?php wp_nonce_field('stripe-settings-nonce');?>
-      <button type="submit" name="strip-settings-submit" class="button button-primary">Save Gateway Settings</button>
+    <?php wp_nonce_field('paypal-settings-nonce');?>
+      <button type="submit" name="paypal-settings-submit" class="button button-primary">Save Gateway Settings</button>
     </p>
 
     </form>
