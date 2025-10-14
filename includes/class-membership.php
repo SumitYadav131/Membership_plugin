@@ -107,6 +107,8 @@ class Membership {
 		 * core plugin.
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-membership-loader.php';
+		
+		include_once( MEMBERSHIP_PATH . 'includes/class-shortcodes-handler.php');
 
 		/**
 		 * The class responsible for defining internationalization functionality
@@ -296,7 +298,7 @@ class Membership {
         $id = $post->ID;
         
   
-		$is_protected = get_post_meta($post_id, '_swpm_protected');
+		$is_protected = get_post_meta($id, '_swpm_protected');
 	    $default_membership_level = array();
 	    
 
@@ -312,8 +314,10 @@ class Membership {
         echo '<h4>' . __("Select the membership level that can access this content:", 'simple-membership') . "</h4>";
         $query = "SELECT * FROM " . $wpdb->prefix . "md_membership_levels WHERE  id !=1 ";
         $levels = $wpdb->get_results($query, ARRAY_A);
+		$selected_levels = get_post_meta($id, '_swpm_protection_levels', true);
+	
         foreach ($levels as $level) {
-			echo $is_checked = get_post_meta($post_id, '_swpm_protection_levels', true);
+			$is_checked = (is_array($selected_levels) && in_array($level['id'], $selected_levels)) ? true : false;
 
             echo '<input type="checkbox" ' . ($is_checked ? "checked='checked'" : "") .
             ' name="swpm_protection_level[' . $level['id'] . ']" value="' . $level['id'] . '" /> ' . $level['name'] . "<br/>";
@@ -328,7 +332,7 @@ class Membership {
 
 		// Check if this is an autosave
 		if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return;
-
+ 
 		// Don't save on revisions
 		if (wp_is_post_revision($post_id)) return;
 

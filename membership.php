@@ -19,7 +19,7 @@
  * Version:           1.0.0
  * Author:            Sumit Yadav
  * Author URI:        https://mydevitsolutions.com/
- * License:           GPL-3.0+
+ * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
  * Text Domain:       membership
  * Domain Path:       /languages
