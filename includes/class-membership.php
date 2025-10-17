@@ -109,7 +109,9 @@ class Membership {
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-membership-loader.php';
 		
 		include_once( MEMBERSHIP_PATH . 'includes/class-shortcodes-handler.php');
-
+		include_once( MEMBERSHIP_PATH . 'includes/class-member-page-handler.php');
+	
+		
 		/**
 		 * The class responsible for defining internationalization functionality
 		 * of the plugin.
