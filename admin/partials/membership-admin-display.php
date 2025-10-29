@@ -7,8 +7,15 @@
  * @package    Membership
  * @subpackage Membership/admin/partials
  */
+ // Get the WordPress database object
+global $wpdb;
 ?>
+<?php 
+// Query the wp_md_member table to get member data
+$members = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}md_member ORDER BY user_id DESC");
 
+
+?>
 
 <div class="wrap members-cm members-level">
   <h1>My Membership</h1>
@@ -52,335 +59,258 @@
             <th id="title" class="sortable asc">Username</th>
             <th id="email" class="sortable desc">Email</th>
             <th id="users">Membership Level</th>
+			<th id="transactions">Transactions</th>
+			<th id="subscriptions">Subscriptions</th>
             <th id="access-start">Access Starts</th>
-            <th id="account-state">Account State</th>
-            <th id="note">Note</th>
+            <th id="account-state">Status</th>
+            
+			
+
           </tr>
         </thead>
 
         <tbody id="the-list">
-          <tr>
+		<?php foreach ($members as $member) { 
+		
+			// Retrieve the user object using get_user_by()
+			$user = get_user_by('id', $member->user_id);
+			
+			// Check if the user exists
+			if ($user) {
+				$username = $user->user_login; // Get the username (user_login)
+				$email = $user->user_email;    // Get the email address (user_email)
+				
+			   
+			} else {
+				$username = ''; 
+				$email = '';   
+			}
+		?>
+          <tr data-user-id="<?php echo esc_attr($member->user_id); ?>">
             <th scope="row" class="check-column">
               <input type="checkbox" name="roles[client]" value="client">
             </th>
             <td class="title column-title has-row-actions column-primary" data-colname="Role Name">
-              <strong>Zsmith</strong>
+              <strong><?php echo esc_html($username); ?></strong>
               <div class="row-actions">
-                <span class="edit"><a href="#">Edit</a> | </span>
+                <span class="edit"><a href="<?php echo esc_url( get_edit_user_link( $member->user_id ) ); ?>">Edit</a> | </span>
                 <span class="delete"><a class="members-delete-role-link" href="#">Delete</a> | </span>
               </div>
             </td>
-            <td>Zsmith1212@gmail.com</td>
-            <td><a href="#">0</a></td>
-            <td>2025-05-05</td>
+            <td><?php echo esc_html($email); ?></td>
+            <td><?php echo esc_html($member->membership_level); ?></td>
+			
+			<td>mp-txn-69017bc4b308f</td>
+            <td>mp-sub-69017bc6b0c2c</td>
             <td>Pending</td>
-            <td>Verification pending</td>
+            <td>Comment..</td>
           </tr>
+		<?php } ?>
+          
 
-          <tr>
-            <th scope="row" class="check-column">
-              <input type="checkbox" name="roles[client]" value="client">
-            </th>
-            <td class="title column-title has-row-actions column-primary" data-colname="Role Name">
-              <strong>Hanery</strong>
-              <div class="row-actions">
-                <span class="edit"><a href="#">Edit</a> | </span>
-                <span class="delete"><a class="members-delete-role-link" href="#">Delete</a> | </span>
-              </div>
-            </td>
-            <td>Hanery2211@gmail.com</td>
-            <td><a href="#">1</a></td>
-            <td>2025-06-02</td>
-            <td>Inactive</td>
-            <td>Follow-up needed</td>
-          </tr>
+         
 
-          <tr>
-            <th scope="row" class="check-column">
-              <input type="checkbox" name="roles[client]" value="client">
-            </th>
-            <td class="title column-title has-row-actions column-primary" data-colname="Role Name">
-              <strong>Larry</strong>
-              <div class="row-actions">
-                <span class="edit"><a href="#">Edit</a> | </span>
-                <span class="delete"><a class="members-delete-role-link" href="#">Delete</a> | </span>
-              </div>
-            </td>
-            <td>Larry1255@gmail.com</td>
-            <td><a href="#">2</a></td>
-            <td>2025-07-08</td>
-            <td>Pending</td>
-            <td>Verification pending</td>
-          </tr>
+          
 
-          <tr>
-            <th scope="row" class="check-column">
-              <input type="checkbox" name="roles[client]" value="client">
-            </th>
-            <td class="title column-title has-row-actions column-primary" data-colname="Role Name">
-              <strong>Rammpa</strong>
-              <div class="row-actions">
-                <span class="edit"><a href="#">Edit</a> | </span>
-                <span class="delete"><a class="members-delete-role-link" href="#">Delete</a> | </span>
-              </div>
-            </td>
-            <td>Rammpa912@gmail.com</td>
-            <td><a href="#">1</a></td>
-            <td>2025-05-05</td>
-            <td>Active</td>
-            <td>VIP Client</td>
-          </tr>       
-
-          <tr>
-            <th scope="row" class="check-column">
-              <input type="checkbox" name="roles[client]" value="client">
-            </th>
-            <td class="title column-title has-row-actions column-primary" data-colname="Role Name">
-              <strong>Laura</strong>
-              <div class="row-actions">
-                <span class="edit"><a href="#">Edit</a> | </span>
-                <span class="delete"><a class="members-delete-role-link" href="#">Delete</a> | </span>
-              </div>
-            </td>
-            <td>Laura422@gmail.com</td>
-            <td><a href="#">3</a></td>
-            <td>2025-05-05</td>
-            <td>Pending</td>
-            <td>VIP Client</td>
-          </tr>
+        
         </tbody>
       </table>
     </form>
   </div>
 
   <!-- Other Tabs -->
-  <div id="active-members" class="tab-content">
-    <form method="get" action="">    
+<?php $active_members = $wpdb->get_results(
+    $wpdb->prepare(
+        "SELECT * FROM {$wpdb->prefix}md_member WHERE status = %s ORDER BY user_id DESC",
+        'active'
+    )
+);
+?>
+<div id="active-members" class="tab-content">
+  <form method="get" action="">
+      <!-- Filter -->
+      <div class="filter-bar">
+        <select name="account_state" id="account_state">
+          <option value="">Account State</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+          <option value="pending">Pending</option>
+        </select>
+        <select name="membership_level" id="membership_level">
+          <option value="">Membership Level</option>
+          <option value="gold">Gold</option>
+          <option value="silver">Silver</option>
+          <option value="bronze">Bronze</option>
+        </select>
+        <input type="text" name="search" id="search" placeholder="Search...">
+        <button type="submit">Search</button>
+      </div>
+
       <!-- Table -->
       <table class="wp-list-table widefat fixed striped table-view-list roles">
         <thead>
           <tr>
-            <td id="cb" class="manage-column column-cb check-column">
+            <td id="cb" class="check-column">
               <input id="cb-select-all-1" type="checkbox">
               <label for="cb-select-all-1">
                 <span class="screen-reader-text">Select All</span>
               </label>
             </td>
-            <th scope="col" id="title" class="manage-column column-title column-primary sortable asc">Username</th>
-            <th scope="col" id="role" class="manage-column column-role sortable desc">Email</th>
-            <th scope="col" id="users" class="manage-column column-users">Membership Level</th>
-            <th scope="col" id="access-state" class="manage-column column-granted_caps">Access Starts</th>
-            <th scope="col" id="account-state" class="manage-column column-denied_caps">Account State</th>
-            <th scope="col" id="note" class="manage-column column-denied_caps">Note</th>
+            <th id="title" class="sortable asc">Username</th>
+            <th id="email" class="sortable desc">Email</th>
+            <th id="users">Membership Level</th>
+			<th id="transactions">Transactions</th>
+			<th id="subscriptions">Subscriptions</th>
+            <th id="access-start">Access Starts</th>
+            <th id="account-state">Status</th>
+            
+			
+
           </tr>
         </thead>
 
-        <tbody id="the-list" data-wp-lists="list:role">
-          <tr>
+        <tbody id="the-list">
+		<?php foreach ($active_members as $member) { 
+		
+			// Retrieve the user object using get_user_by()
+			$user = get_user_by('id', $member->user_id);
+			
+			// Check if the user exists
+			if ($user) {
+				$username = $user->user_login; // Get the username (user_login)
+				$email = $user->user_email;    // Get the email address (user_email)
+				
+			   
+			} else {
+				$username = ''; 
+				$email = '';   
+			}
+		?>
+          <tr data-user-id="<?php echo esc_attr($member->user_id); ?>">
             <th scope="row" class="check-column">
               <input type="checkbox" name="roles[client]" value="client">
             </th>
             <td class="title column-title has-row-actions column-primary" data-colname="Role Name">
-              <strong>Zsmith</strong>
+              <strong><?php echo esc_html($username); ?></strong>
               <div class="row-actions">
-                <span class="edit"><a href="#">Edit</a> | </span>
+                <span class="edit"><a href="<?php echo esc_url( get_edit_user_link( $member->user_id ) ); ?>">Edit</a> | </span>
                 <span class="delete"><a class="members-delete-role-link" href="#">Delete</a> | </span>
               </div>
             </td>
-            <td>Zsmith1212@gmail.com</td>
-            <td><a href="#">0</a></td>
-            <td>2025-05-05</td>
+            <td><?php echo esc_html($email); ?></td>
+            <td><?php echo esc_html($member->membership_level); ?></td>
+			
+			<td>mp-txn-69017bc4b308f</td>
+            <td>mp-sub-69017bc6b0c2c</td>
             <td>Pending</td>
-            <td>Verification pending</td>
+            <td>Comment..</td>
           </tr>
+		<?php } ?>
+          
 
-          <tr>
-            <th scope="row" class="check-column">
-              <input type="checkbox" name="roles[client]" value="client">
-            </th>
-            <td class="title column-title has-row-actions column-primary" data-colname="Role Name">
-              <strong>Hanery</strong>
-              <div class="row-actions">
-                <span class="edit"><a href="#">Edit</a> | </span>
-                <span class="delete"><a class="members-delete-role-link" href="#">Delete</a> | </span>
-              </div>
-            </td>
-            <td>Hanery2211@gmail.com</td>
-            <td><a href="#">0</a></td>
-            <td>2025-06-02</td>
-            <td>Inactive</td>
-            <td>Follow-up needed</td>
-          </tr>
+         
 
-          <tr>
-            <th scope="row" class="check-column">
-              <input type="checkbox" name="roles[client]" value="client">
-            </th>
-            <td class="title column-title has-row-actions column-primary" data-colname="Role Name">
-              <strong>Larry</strong>
-              <div class="row-actions">
-                <span class="edit"><a href="#">Edit</a> | </span>
-                <span class="delete"><a class="members-delete-role-link" href="#">Delete</a> | </span>
-              </div>
-            </td>
-            <td>Larry1255@gmail.com</td>
-            <td><a href="#">0</a></td>
-            <td>2025-07-08</td>
-            <td>Pending</td>
-            <td>Verification pending</td>
-          </tr>
+          
 
-          <tr>
-            <th scope="row" class="check-column">
-              <input type="checkbox" name="roles[client]" value="client">
-            </th>
-            <td class="title column-title has-row-actions column-primary" data-colname="Role Name">
-              <strong>Rammpa</strong>
-              <div class="row-actions">
-                <span class="edit"><a href="#">Edit</a> | </span>
-                <span class="delete"><a class="members-delete-role-link" href="#">Delete</a> | </span>
-              </div>
-            </td>
-            <td>Rammpa912@gmail.com</td>
-            <td><a href="#">0</a></td>
-            <td>2025-05-05</td>
-            <td>Active</td>
-            <td>VIP Client</td>
-          </tr>       
-
-          <tr>
-            <th scope="row" class="check-column">
-              <input type="checkbox" name="roles[client]" value="client">
-            </th>
-            <td class="title column-title has-row-actions column-primary" data-colname="Role Name">
-              <strong>Laura</strong>
-              <div class="row-actions">
-                <span class="edit"><a href="#">Edit</a> | </span>
-                <span class="delete"><a class="members-delete-role-link" href="#">Delete</a> | </span>
-              </div>
-            </td>
-            <td>Laura422@gmail.com</td>
-            <td><a href="#">0</a></td>
-            <td>2025-05-05</td>
-            <td>Pending</td>
-            <td>VIP Client</td>
-          </tr>
+        
         </tbody>
       </table>
     </form>
   </div>
-
+<?php $expired_members = $wpdb->get_results(
+    $wpdb->prepare(
+        "SELECT * FROM {$wpdb->prefix}md_member WHERE status = %s ORDER BY user_id DESC",
+        'expired'
+    )
+);
+?>
   <div id="expired-members" class="tab-content">
-    <form method="get" action="">    
+   <form method="get" action="">
+      <!-- Filter -->
+      <div class="filter-bar">
+        <select name="account_state" id="account_state">
+          <option value="">Account State</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+          <option value="pending">Pending</option>
+        </select>
+        <select name="membership_level" id="membership_level">
+          <option value="">Membership Level</option>
+          <option value="gold">Gold</option>
+          <option value="silver">Silver</option>
+          <option value="bronze">Bronze</option>
+        </select>
+        <input type="text" name="search" id="search" placeholder="Search...">
+        <button type="submit">Search</button>
+      </div>
+
       <!-- Table -->
       <table class="wp-list-table widefat fixed striped table-view-list roles">
         <thead>
           <tr>
-            <td id="cb" class="manage-column column-cb check-column">
+            <td id="cb" class="check-column">
               <input id="cb-select-all-1" type="checkbox">
               <label for="cb-select-all-1">
                 <span class="screen-reader-text">Select All</span>
               </label>
             </td>
-            <th scope="col" id="title" class="manage-column column-title column-primary sortable asc">Username</th>
-            <th scope="col" id="role" class="manage-column column-role sortable desc">Email</th>
-            <th scope="col" id="users" class="manage-column column-users">Membership Level</th>
-            <th scope="col" id="access-state" class="manage-column column-granted_caps">Access Starts</th>
-            <th scope="col" id="account-state" class="manage-column column-denied_caps">Account State</th>
-            <th scope="col" id="note" class="manage-column column-denied_caps">Note</th>
+            <th id="title" class="sortable asc">Username</th>
+            <th id="email" class="sortable desc">Email</th>
+            <th id="users">Membership Level</th>
+			<th id="transactions">Transactions</th>
+			<th id="subscriptions">Subscriptions</th>
+            <th id="access-start">Access Starts</th>
+            <th id="account-state">Status</th>
+            
+			
+
           </tr>
         </thead>
 
-        <tbody id="the-list" data-wp-lists="list:role">
-          <tr>
+        <tbody id="the-list">
+		<?php foreach ($expired_members as $member) { 
+		
+			// Retrieve the user object using get_user_by()
+			$user = get_user_by('id', $member->user_id);
+			
+			// Check if the user exists
+			if ($user) {
+				$username = $user->user_login; // Get the username (user_login)
+				$email = $user->user_email;    // Get the email address (user_email)
+				
+			   
+			} else {
+				$username = ''; 
+				$email = '';   
+			}
+		?>
+          <tr data-user-id="<?php echo esc_attr($member->user_id); ?>">
             <th scope="row" class="check-column">
               <input type="checkbox" name="roles[client]" value="client">
             </th>
             <td class="title column-title has-row-actions column-primary" data-colname="Role Name">
-              <strong>Msmith</strong>
+              <strong><?php echo esc_html($username); ?></strong>
               <div class="row-actions">
-                <span class="edit"><a href="#">Edit</a> | </span>
+                <span class="edit"><a href="<?php echo esc_url( get_edit_user_link( $member->user_id ) ); ?>">Edit</a> | </span>
                 <span class="delete"><a class="members-delete-role-link" href="#">Delete</a> | </span>
               </div>
             </td>
-            <td>Msmith1212@gmail.com</td>
-            <td><a href="#">0</a></td>
-            <td>2025-05-05</td>
+            <td><?php echo esc_html($email); ?></td>
+            <td><?php echo esc_html($member->membership_level); ?></td>
+			
+			<td>mp-txn-69017bc4b308f</td>
+            <td>mp-sub-69017bc6b0c2c</td>
             <td>Pending</td>
-            <td>Verification pending</td>
+            <td>Comment..</td>
           </tr>
+		<?php } ?>
+          
 
-          <tr>
-            <th scope="row" class="check-column">
-              <input type="checkbox" name="roles[client]" value="client">
-            </th>
-            <td class="title column-title has-row-actions column-primary" data-colname="Role Name">
-              <strong>Danery</strong>
-              <div class="row-actions">
-                <span class="edit"><a href="#">Edit</a> | </span>
-                <span class="delete"><a class="members-delete-role-link" href="#">Delete</a> | </span>
-              </div>
-            </td>
-            <td>Danery2211@gmail.com</td>
-            <td><a href="#">0</a></td>
-            <td>2025-06-02</td>
-            <td>Inactive</td>
-            <td>Follow-up needed</td>
-          </tr>
+         
 
-          <tr>
-            <th scope="row" class="check-column">
-              <input type="checkbox" name="roles[client]" value="client">
-            </th>
-            <td class="title column-title has-row-actions column-primary" data-colname="Role Name">
-              <strong>Garry</strong>
-              <div class="row-actions">
-                <span class="edit"><a href="#">Edit</a> | </span>
-                <span class="delete"><a class="members-delete-role-link" href="#">Delete</a> | </span>
-              </div>
-            </td>
-            <td>Garry1255@gmail.com</td>
-            <td><a href="#">0</a></td>
-            <td>2025-07-08</td>
-            <td>Pending</td>
-            <td>Verification pending</td>
-          </tr>
+          
 
-          <tr>
-            <th scope="row" class="check-column">
-              <input type="checkbox" name="roles[client]" value="client">
-            </th>
-            <td class="title column-title has-row-actions column-primary" data-colname="Role Name">
-              <strong>Lammpa</strong>
-              <div class="row-actions">
-                <span class="edit"><a href="#">Edit</a> | </span>
-                <span class="delete"><a class="members-delete-role-link" href="#">Delete</a> | </span>
-              </div>
-            </td>
-            <td>Lammpa912@gmail.com</td>
-            <td><a href="#">0</a></td>
-            <td>2025-05-05</td>
-            <td>Active</td>
-            <td>VIP Client</td>
-          </tr>       
-
-          <tr>
-            <th scope="row" class="check-column">
-              <input type="checkbox" name="roles[client]" value="client">
-            </th>
-            <td class="title column-title has-row-actions column-primary" data-colname="Role Name">
-              <strong>Maura</strong>
-              <div class="row-actions">
-                <span class="edit"><a href="#">Edit</a> | </span>
-                <span class="delete"><a class="members-delete-role-link" href="#">Delete</a> | </span>
-              </div>
-            </td>
-            <td>Maura422@gmail.com</td>
-            <td><a href="#">0</a></td>
-            <td>2025-05-05</td>
-            <td>Pending</td>
-            <td>VIP Client</td>
-          </tr>
+        
         </tbody>
       </table>
     </form>
@@ -388,14 +318,7 @@
 </div>
 
 <!-- Bulk Action -->
-<div class="bulk-bar">
-  <select id="bulkActionTop" name="bulk_action">
-    <option value="">Bulk actions</option>
-    <option value="edit">Edit</option>
-    <option value="trash">Move to Trash</option>
-  </select>
-  <button type="button" onclick="applyBulkAction()">Apply</button>
-</div>
+
 
 
 <script>
@@ -462,3 +385,4 @@
   }
   
 </script>
+

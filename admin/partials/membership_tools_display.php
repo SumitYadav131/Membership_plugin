@@ -109,8 +109,8 @@ global $wpdb; ?>
 <h1>Paypal Testing </h1>
 <?php
 // create-order.php
-$clientId = '';
-$secret = '';
+$clientId = 'AWKLVPdV6n0_GjnySM-CVlFwiA8wwrXfVz5Si_rMOKhw1cmM79UGQV4zJCXP8S0sey_O506atJ2sDJ9l';
+$secret = 'EGTq9o7LyIBRlpCh85qDMWcRn1kkeKhW_IUplkXfnictbmWI-GWnY5LUzJd_JYI9GBlBQfBwCT_JJY63';
 
 // Get access token first (same as above)
 $ch = curl_init();

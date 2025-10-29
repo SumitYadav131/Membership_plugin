@@ -110,6 +110,7 @@ class Membership {
 		
 		include_once( MEMBERSHIP_PATH . 'includes/class-shortcodes-handler.php');
 		include_once( MEMBERSHIP_PATH . 'includes/class-member-page-handler.php');
+		include_once( MEMBERSHIP_PATH . 'includes/class-member-ajax-handler.php');
 	
 		
 		/**
@@ -241,7 +242,17 @@ class Membership {
 	 /* Render the members menu in admin dashboard */
 
     public function admin_members_menu() {
-        include_once(MEMBERSHIP_PATH. 'admin/partials/membership-admin-display.php');
+		
+		// Check if the query string contains 'action=edit'
+    if ( isset( $_GET['action'] ) && $_GET['action'] == 'edit' ) {
+        // If the action is 'edit', include the edit version of the template
+        include_once(MEMBERSHIP_PATH . 'admin/partials/membership-admin-display_edit.php');
+    } else {
+        // If the action is not 'edit' (or not set), include the default template
+        include_once(MEMBERSHIP_PATH . 'admin/partials/membership-admin-display.php');
+    }
+		
+       
       
     }
 	 public function admin_add_members() {
