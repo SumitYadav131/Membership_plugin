@@ -84,7 +84,8 @@ $access_value = 'years';
           <td class="title column-title has-row-actions column-primary" data-colname="Role Name">
             <strong><?php echo $level['name']; ?></strong>
             <div class="row-actions">
-              <span class="edit"><a href="#">Edit</a> | </span>
+              <span class="edit"><a href="<?php echo esc_url( 
+    admin_url( 'admin.php?page=my_wp_membership_levels&action=edit&mlevel_id=' . intval($level['id']))); ?>">Edit</a> | </span>
               <span class="delete"><a href="#">Delete</a> | </span>
             </div>
           </td>

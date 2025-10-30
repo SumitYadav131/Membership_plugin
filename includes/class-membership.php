@@ -243,11 +243,14 @@ class Membership {
 
     public function admin_members_menu() {
 		
-		// Check if the query string contains 'action=edit'
-    if ( isset( $_GET['action'] ) && $_GET['action'] == 'edit' ) {
-        // If the action is 'edit', include the edit version of the template
-        include_once(MEMBERSHIP_PATH . 'admin/partials/membership-admin-display_edit.php');
-    } else {
+		// Check if the query string contains 'actions'
+    if ( isset( $_GET['action'] ) && $_GET['action'] == 'subscriptions' ) {
+        // If the action is 'subscriptions', include the edit version of the template
+        include_once(MEMBERSHIP_PATH . 'admin/partials/membership-subscriptions-detail.php');
+    } else if(isset( $_GET['action'] ) && $_GET['action'] == 'transactions')  {
+		  // If the action is 'subscriptions', include the edit version of the template
+	  include_once(MEMBERSHIP_PATH . 'admin/partials/membership-transactions-detail.php');
+	}else {
         // If the action is not 'edit' (or not set), include the default template
         include_once(MEMBERSHIP_PATH . 'admin/partials/membership-admin-display.php');
     }
@@ -263,7 +266,12 @@ class Membership {
 	/* Render the membership levels menu in admin dashboard */
 
     public function admin_membership_levels_menu() {
-        include_once(MEMBERSHIP_PATH. 'admin/partials/membership_levels_display.php');
+		 if ( isset( $_GET['action'] ) && $_GET['action'] == 'edit' ) {
+            include_once(MEMBERSHIP_PATH. 'admin/partials/membership_levels_display_edit.php');
+		 } else {
+			include_once(MEMBERSHIP_PATH. 'admin/partials/membership_levels_display.php'); 
+			 
+		 }
        
     }
 	

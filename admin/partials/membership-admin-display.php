@@ -74,7 +74,7 @@ $members = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}md_member ORDER BY u
 		
 			// Retrieve the user object using get_user_by()
 			$user = get_user_by('id', $member->user_id);
-			
+			$subscription_id = '0';
 			// Check if the user exists
 			if ($user) {
 				$username = $user->user_login; // Get the username (user_login)
@@ -100,8 +100,12 @@ $members = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}md_member ORDER BY u
             <td><?php echo esc_html($email); ?></td>
             <td><?php echo esc_html($member->membership_level); ?></td>
 			
-			<td>mp-txn-69017bc4b308f</td>
-            <td>mp-sub-69017bc6b0c2c</td>
+		<td><a href="<?php echo esc_url( 
+    admin_url( 'admin.php?page=my_membership&action=subscriptions&user_id=' . intval($member->user_id) . '&subscriptions_id=' . intval($subscription_id) ) 
+  ); ?>">mp-txn-69017bc4b308f</a></td>
+            <td><a href="<?php echo esc_url( 
+    admin_url( 'admin.php?page=my_membership&action=transactions&user_id=' . intval($member->user_id) . '&transaction_id=' . intval($subscription_id) ) 
+  ); ?>">mp-sub-69017bc6b0c2c</a></td>
             <td>Pending</td>
             <td>Comment..</td>
           </tr>
@@ -200,8 +204,12 @@ $members = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}md_member ORDER BY u
             <td><?php echo esc_html($email); ?></td>
             <td><?php echo esc_html($member->membership_level); ?></td>
 			
-			<td>mp-txn-69017bc4b308f</td>
-            <td>mp-sub-69017bc6b0c2c</td>
+		<td><a href="<?php echo esc_url( 
+    admin_url( 'admin.php?page=my_membership&action=subscriptions&user_id=' . intval($member->user_id) . '&subscriptions_id=' . intval($subscription_id) ) 
+  ); ?>">mp-txn-69017bc4b308f</a></td>
+            <td><a href="<?php echo esc_url( 
+    admin_url( 'admin.php?page=my_membership&action=transactions&user_id=' . intval($member->user_id) . '&transaction_id=' . intval($subscription_id) ) 
+  ); ?>">mp-sub-69017bc6b0c2c</a></td>
             <td>Pending</td>
             <td>Comment..</td>
           </tr>
@@ -298,8 +306,12 @@ $members = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}md_member ORDER BY u
             <td><?php echo esc_html($email); ?></td>
             <td><?php echo esc_html($member->membership_level); ?></td>
 			
-			<td>mp-txn-69017bc4b308f</td>
-            <td>mp-sub-69017bc6b0c2c</td>
+			<td><a href="<?php echo esc_url( 
+    admin_url( 'admin.php?page=my_membership&action=subscriptions&user_id=' . intval($member->user_id) . '&subscriptions_id=' . intval($subscription_id) ) 
+  ); ?>">mp-txn-69017bc4b308f</a></td>
+            <td><a href="<?php echo esc_url( 
+    admin_url( 'admin.php?page=my_membership&action=transactions&user_id=' . intval($member->user_id) . '&transaction_id=' . intval($subscription_id) ) 
+  ); ?>">mp-sub-69017bc6b0c2c</a></td>
             <td>Pending</td>
             <td>Comment..</td>
           </tr>
