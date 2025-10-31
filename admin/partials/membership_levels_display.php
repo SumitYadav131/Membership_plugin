@@ -77,7 +77,7 @@ $access_value = 'years';
       foreach ($levels as $level) {
 
         ?>
-        <tr>
+         <tr data-level-id="<?php echo esc_attr($level['id']); ?>">
           <th scope="row" class="check-column">
             <input type="checkbox" name="roles[client]" value="client">
           </th>
@@ -86,7 +86,7 @@ $access_value = 'years';
             <div class="row-actions">
               <span class="edit"><a href="<?php echo esc_url( 
     admin_url( 'admin.php?page=my_wp_membership_levels&action=edit&mlevel_id=' . intval($level['id']))); ?>">Edit</a> | </span>
-              <span class="delete"><a href="#">Delete</a> | </span>
+              <span class="delete"><a class="members-level-delete-link" href="#">Delete</a> | </span>
             </div>
           </td>
           <td><?php echo $level['role']; ?></td>
