@@ -74,8 +74,13 @@ class Membership {
 		}
 		$this->plugin_name = 'membership';
         //Admin menu hook.
+		add_action('init', array(&$this, 'my_wp_register_membership_levels_cpt'));
         add_action('admin_menu', array(&$this, 'plugin_menu'));
 		add_action('save_post', array(&$this, 'save_postdata'));
+		add_filter('template_include', array(&$this, 'my_membership_level_single_template'));
+
+
+
 		$this->load_dependencies();
 		$this->set_locale();
 		$this->define_admin_hooks();
@@ -225,15 +230,16 @@ class Membership {
 	
 	
 	 public function plugin_menu() {
-        $menu_parent_slug = 'my_membership';
+        $menu_parent_slug = 'edit.php?post_type=my_membership_level';
 
-        add_menu_page(__("WP Membership", 'simple-membership'), __("My Membership", 'my-membership'), 'manage_options', $menu_parent_slug, array(&$this, "admin_members_menu"), 'dashicons-id');
-        add_submenu_page($menu_parent_slug, __("Members", 'my-membership'), __('Members', 'my-membership'), 'manage_options', 'my_wp_membership', array(&$this, "admin_add_members"));
-        add_submenu_page($menu_parent_slug, __("Membership Levels", 'my-membership'), __("Membership Levels", 'my-membership'), 'manage_options', 'my_wp_membership_levels', array(&$this, "admin_membership_levels_menu"));
-        add_submenu_page($menu_parent_slug, __("Settings", 'my-membership'), __("Settings", 'my-membership'), 'manage_options', 'my_wp_membership_settings', array(&$this, "admin_settings_menu"));
-        add_submenu_page($menu_parent_slug, __("Payments", 'my-membership'), __("Payments", 'my-membership'), 'manage_options', 'my_wp_membership_payments', array(&$this, "admin_payments_menu"));
-        add_submenu_page($menu_parent_slug, __("Tools", 'my-membership'), __("Tools", 'my-membership'), 'manage_options', 'my_wp_membership_tools', array(&$this, "admin_tools_menu"));
-        add_submenu_page($menu_parent_slug, __("Reports", 'my-membership'), __("Reports", 'my-membership'), 'manage_options', 'my_wp_membership_reports', array(&$this, "admin_reports_menu"));
+		  add_submenu_page($menu_parent_slug, __("My Membership", 'my-membership'), __('Members', 'my-membership'), 'manage_options', 'my_wp_membership', array(&$this, "admin_members_menu"));
+		
+        add_submenu_page($menu_parent_slug, __("Members", 'my_membership_level'), __('Add Members', 'my_wp_membership'), 'manage_options', 'my_membership', array(&$this, "admin_add_members"));
+        add_submenu_page($menu_parent_slug, __("Membership Levels", 'my_membership_level'), __("Membership Levels", 'my-membership'), 'manage_options', 'my_wp_membership_levels', array(&$this, "admin_membership_levels_menu"));
+        add_submenu_page($menu_parent_slug, __("Settings", 'my_membership_level'), __("Settings", 'my-membership'), 'manage_options', 'my_wp_membership_settings', array(&$this, "admin_settings_menu"));
+        add_submenu_page($menu_parent_slug, __("Payments", 'my_membership_level'), __("Payments", 'my-membership'), 'manage_options', 'my_wp_membership_payments', array(&$this, "admin_payments_menu"));
+        add_submenu_page($menu_parent_slug, __("Tools", 'my_membership_level'), __("Tools", 'my-membership'), 'manage_options', 'my_wp_membership_tools', array(&$this, "admin_tools_menu"));
+        add_submenu_page($menu_parent_slug, __("Reports", 'my_membership_level'), __("Reports", 'my-membership'), 'manage_options', 'my_wp_membership_reports', array(&$this, "admin_reports_menu"));
 		$this->meta_box();
 
        
@@ -373,6 +379,54 @@ class Membership {
 			delete_post_meta($post_id, '_swpm_protection_levels');
 		}
 	}
+	
+	public function my_wp_register_membership_levels_cpt() {
 
+		$labels = array(
+			'name'               => __('Membership Levels test', 'my-wp-membership'),
+			'singular_name'      => __('Membership Level test', 'my-wp-membership'),
+			'add_new'            => __('Add New Level', 'my-wp-membership'),
+			'add_new_item'       => __('Add New Membership Level', 'my-wp-membership'),
+			'edit_item'          => __('Edit Membership Level', 'my-wp-membership'),
+			'new_item'           => __('New Membership Level', 'my-wp-membership'),
+			'all_items'          => __('All Membership Levels', 'my-wp-membership'),
+			'view_item'          => __('View Membership Level', 'my-wp-membership'),
+			'search_items'       => __('Search Membership Levels', 'my-wp-membership'),
+			'not_found'          => __('No membership levels found', 'my-wp-membership'),
+			'menu_name'          => __('Membership Levels', 'my-wp-membership')
+		);
+
+		$args = array(
+			'labels'             => $labels,
+			'public'             => true, // Not publicly queryable
+			'show_ui'            => true,  // Show in admin
+			'show_in_menu'       => true,
+			'menu_icon'          => 'dashicons-groups',
+			'supports'           => array('title', 'editor', 'custom-fields'),
+			'capability_type'    => 'post',
+			'hierarchical'       => false,
+			'has_archive'        => false,
+			'rewrite' => array(
+				'slug' => 'membership-level',
+				'with_front' => false
+			)
+		);
+
+		register_post_type('my_membership_level', $args);
+		
+	}
+
+	public function my_membership_level_single_template($template) {
+		if (is_singular('my_membership_level')) {
+
+		// Path to your plugin template file
+		$plugin_template = MEMBERSHIP_PATH. 'templates/single-my_membership_level.php';
+
+			if (file_exists($plugin_template)) {
+				return $plugin_template;
+			} 
+		}
+		return $template;
+	}
 
 }

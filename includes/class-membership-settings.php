@@ -38,6 +38,7 @@ class Members_Settings {
 
 	private function __construct() {
 		$this->settings = (array) get_option( 'membership-settings' );
+		
 	}
 
 	public static function get_instance() {
@@ -60,6 +61,8 @@ class Members_Settings {
 	public function save() {
 		update_option( 'membership-settings', $this->settings );
 	}
+	
+
 
 
 }

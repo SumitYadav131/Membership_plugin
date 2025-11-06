@@ -55,32 +55,52 @@ class Membership_Activator {
 		// create member table 
 		
 		   $table_name = $wpdb->prefix . 'md_member';
-    $charset_collate = $wpdb->get_charset_collate();
+		   $charset_collate = $wpdb->get_charset_collate();
 
-    $sql1 = "CREATE TABLE $table_name (
-        id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
-        user_id BIGINT(20) UNSIGNED NOT NULL,
-        membership_level VARCHAR(100) NOT NULL,
-        status VARCHAR(50) DEFAULT 'Active',
-        access_start DATE DEFAULT NULL,
-        member_since DATE DEFAULT NULL,
-        gender VARCHAR(20) DEFAULT NULL,
-        phone VARCHAR(50) DEFAULT NULL,
-        street VARCHAR(255) DEFAULT NULL,
-        city VARCHAR(100) DEFAULT NULL,
-        state VARCHAR(100) DEFAULT NULL,
-        zipcode VARCHAR(20) DEFAULT NULL,
-        country VARCHAR(100) DEFAULT NULL,
-        company VARCHAR(150) DEFAULT NULL,
-        admin_notes TEXT DEFAULT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        PRIMARY KEY (id),
-        KEY user_id (user_id)
-    ) $charset_collate;";
+		$sql1 = "CREATE TABLE $table_name (
+			id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+			user_id BIGINT(20) UNSIGNED NOT NULL,
+			membership_level VARCHAR(100) NOT NULL,
+			status VARCHAR(50) DEFAULT 'Active',
+			access_start DATE DEFAULT NULL,
+			member_since DATE DEFAULT NULL,
+			gender VARCHAR(20) DEFAULT NULL,
+			phone VARCHAR(50) DEFAULT NULL,
+			street VARCHAR(255) DEFAULT NULL,
+			city VARCHAR(100) DEFAULT NULL,
+			state VARCHAR(100) DEFAULT NULL,
+			zipcode VARCHAR(20) DEFAULT NULL,
+			country VARCHAR(100) DEFAULT NULL,
+			company VARCHAR(150) DEFAULT NULL,
+			admin_notes TEXT DEFAULT NULL,
+			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY (id),
+			KEY user_id (user_id)
+		) $charset_collate;";
 
-    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-    dbDelta($sql1);
-    }
+		require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+		dbDelta($sql1);
+	
+		// create new table 
+		$table_name = $wpdb->prefix . 'md_subscriptions';
+		$charset_collate = $wpdb->get_charset_collate();
+
+		$sql2 = "CREATE TABLE $table_name (
+			id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+			user_id BIGINT(20) UNSIGNED NOT NULL,
+			membership_id VARCHAR(100) NOT NULL,
+			price DECIMAL(10,2) NOT NULL DEFAULT '0.00',
+			total DECIMAL(10,2) NOT NULL DEFAULT '0.00',
+			gateway VARCHAR(100) DEFAULT NULL,
+			period_type VARCHAR(50) DEFAULT NULL,
+			status VARCHAR(50) DEFAULT NULL,
+			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY (id),
+			KEY user_id (user_id),
+			KEY membership_id (membership_id)
+		) $charset_collate;";
+		 dbDelta($sql2);
+	}
 
 }
 
