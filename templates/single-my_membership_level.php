@@ -7,7 +7,7 @@ if (have_posts()) :
 <script src="https://js.stripe.com/v3/"></script>
 
 <div class="membership-level-detail">
-	<h1><?php the_title(); ?></h1>
+	<h1 class="mem-title"><?php the_title(); ?></h1>
 
 	<div class="membership-content">
 		<?php the_content(); ?>
@@ -15,58 +15,90 @@ if (have_posts()) :
 
 	<hr>
 
-	<h2>Membership Signup Form</h2>
+	<h2 class="mem-title">Membership Signup Form</h2>
 
 	<form id="membership-form">
-		<p>
+		<p class="input-box half">
 			<label for="member_name">Your Name:</label><br>
 			<input type="text" name="member_name" id="member_name" required>
 		</p>
 
-		<p>
+		<p class="input-box half">
 			<label for="member_email">Email Address:</label><br>
 			<input type="email" name="member_email" id="member_email" required>
 		</p>
 
 		<h3>Address Details</h3>
 
-		<p>
+		<p class="input-box full">
 			<label for="member_street">Street Address:</label><br>
 			<input type="text" name="member_street" id="member_street" required>
 		</p>
 
-		<p>
+		<p class="input-box half">
 			<label for="member_city">City:</label><br>
 			<input type="text" name="member_city" id="member_city" required>
 		</p>
 
-		<p>
+		<p class="input-box half">
 			<label for="member_state">State / Province:</label><br>
 			<input type="text" name="member_state" id="member_state" required>
 		</p>
 
-		<p>
+		<p class="input-box half">
 			<label for="member_pincode">Postal Code / Pincode:</label><br>
 			<input type="text" name="member_pincode" id="member_pincode" required>
 		</p>
 
-		<p>
+		<p class="input-box half">
 			<label for="member_country">Country:</label><br>
 			<input type="text" name="member_country" id="member_country" required>
 		</p>
 
-		<p>
+		<p class="input-box half">
 			<label for="member_password">Password:</label><br>
 			<input type="password" name="member_password" id="member_password" required>
 		</p>
 
-		<p><strong>Payment Details:</strong></p>
-		<div id="card-element" style="border:1px solid #ccc; padding:10px; border-radius:4px;"></div>
-		<div id="card-errors" style="color:red; margin-top:10px;"></div>
-
-		<p>
-			<button type="submit" id="submitBtn">Join & Pay Now</button>
+		<p class="input-box half">
+			<label for="member_confrim_password">Confirm Password:</label><br>
+			<input type="password" name="member_confrim_password" id="member_confrim_password" required>
 		</p>
+
+		<!-- <p class="input-box full">
+			<span>Payment Details:</span>
+			<div id="card-element" style="border:1px solid #ccc; padding:10px; border-radius:4px;"></div>
+			<div id="card-errors" style="color:red; margin-top:10px;"></div>
+		</p> -->
+
+		<fieldset>
+			<legend>Pay With</legend>
+
+			<div>
+				<label>
+					<input type="radio" name="payment_method" value="paypal" /> PayPal
+				</label>
+
+				<label>
+					<input type="radio" name="payment_method" value="stripe" /> Stripe
+				</label>
+			</div>
+			
+			<!-- PayPal -->
+			<div id="fields-paypal" class="method-fields" aria-hidden="true">
+				<p class="note">You will be redirected to PayPal to complete the payment.</p>
+			</div>
+
+			<!-- stripe -->
+			<div id="fields-stripe" class="method-fields" aria-hidden="true">
+				<div id="card-element" style="border:1px solid #ccc; padding:10px; border-radius:4px;"></div>
+				<div id="card-errors" style="color:red; margin-top:10px;"></div>
+			</div>
+
+		</fieldset>
+
+		<button type="submit" id="submitBtn">Join & Pay Now</button>
+		
 	</form>
 
 </div>

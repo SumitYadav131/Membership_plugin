@@ -2,3 +2,121 @@
  * All of the CSS for your public-facing functionality should be
  * included in this file.
  */
+
+/* Forntend Form */
+.membership-level-detail {
+  width: 1200px;
+  display: flex;
+  flex-direction: column;
+  place-self: center;
+  margin-top: 200px;
+  margin-bottom: 100px;
+}
+
+.mem-title {
+  font-family: var(--e-global-typography-primary-font-family), Sans-serif !important;
+  font-size: 58px;
+  font-weight: 500 !important;
+}
+
+h2.mem-title {
+  font-size: 40px;
+}
+
+.membership-content p {
+  font-family: var(--e-global-typography-primary-font-family), Sans-serif !important;
+  font-weight: 500;
+  line-height: 1.8em;
+  font-size: 16px;
+  color: #333;
+}
+
+form#membership-form {
+  background: white;
+  padding: 40px 40px;
+  border: 1px solid #eaeaea;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+form#membership-form input {
+  background: #fafafa;
+  border: 1px solid #eaeaea;
+  border-radius: 6px;
+}
+
+form#membership-form .input-box label {
+  font-family: var(--e-global-typography-primary-font-family), Sans-serif !important;
+  font-weight: 400;
+  line-height: 1.8em;
+  font-size: 16px;
+  color: #333;
+}
+
+form#membership-form .input-box.full {
+  width: 100%;
+}
+
+form#membership-form .input-box.half {
+  width: 49%;
+}
+
+form#membership-form #card-element {
+  /* width: 36%; */
+  align-content: center;
+}
+
+fieldset {
+  width: 410px;
+  padding: 0 !important;
+}
+
+legend {
+   font-family: var(--e-global-typography-primary-font-family), Sans-serif !important;
+  font-weight: 600;
+  line-height: 1.8em;
+  font-size: 20px;
+  /* font-weight: 600; */
+}
+
+.method-fields {
+  display: none;
+  margin-top: 12px;
+}
+
+.method-fields.active {
+  display: block;
+}
+/* .row {
+  display: flex;
+  gap: 12px;
+} */
+/* .col {
+  flex: 1;
+  min-width: 0;
+} */
+/* 
+.payment-options label {
+  display: block;
+  margin: 5px 0;
+  cursor: pointer;
+} */
+
+form#membership-form fieldset label {
+  margin-right: 12px;
+  cursor: pointer;
+}
+
+.method-fields {
+  margin-top: 15px;
+}
+
+form#membership-form #submitBtn{
+   padding: 12px 28px;
+   border-radius: 6px;
+   border: 2px solid white;
+}
