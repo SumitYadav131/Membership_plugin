@@ -12,7 +12,9 @@ class ShortcodesHandler {
 		add_shortcode('md_login_form', array(&$this, 'login_form_shortcode_output'));
 		add_shortcode('md_membership_levels', array(&$this, 'display_membership_levels'));
 		 // HANDLE LOGIN BEFORE OUTPUT
-        add_action('init', array($this, 'process_login'));
+        add_action('init', array(&$this, 'process_login'));
+		add_action('init', array(&$this, 'process_membership_cancel'));
+
 	}
 
 	public function registration_form( $args ) {
@@ -134,6 +136,27 @@ public function process_login() {
         exit;
     }
 }
+
+
+public function process_membership_cancel() {
+
+    if ( isset($_POST['md_cancel_membership']) &&
+         wp_verify_nonce($_POST['md_cancel_nonce'], 'md_cancel_membership') ) {
+
+        $user_id = get_current_user_id();
+
+        // 1. Remove role
+        $user = new WP_User($user_id);
+        $user->set_role('subscriber');
+
+        // 2. Mark membership canceled in meta
+        update_user_meta($user_id, 'membership_status', 'canceled');
+
+        wp_redirect(add_query_arg('updated', '1', wp_get_referer()));
+        exit;
+    }
+}
+
 
 
 	

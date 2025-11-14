@@ -107,3 +107,15 @@ $updated = isset($_GET['updated']);
 </div>
 
 <?php endif; ?>
+<?php
+function md_get_user_payments($user_id) {
+    global $wpdb;
+
+    $table = $wpdb->prefix . 'md_payments';
+
+    return $wpdb->get_results(
+        $wpdb->prepare("SELECT * FROM $table WHERE user_id = %d ORDER BY created_at DESC", $user_id)
+    );
+}
+
+?>
