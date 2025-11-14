@@ -11,6 +11,8 @@ class ShortcodesHandler {
 		add_shortcode('md_profile_form', array(&$this, 'profile_form'));
 		add_shortcode('md_login_form', array(&$this, 'login_form_shortcode_output'));
 		add_shortcode('md_membership_levels', array(&$this, 'display_membership_levels'));
+		 // HANDLE LOGIN BEFORE OUTPUT
+        add_action('init', array($this, 'process_login'));
 	}
 
 	public function registration_form( $args ) {
@@ -97,10 +99,47 @@ class ShortcodesHandler {
     return ob_get_clean();
 }
 
+	public function login_form_shortcode_output() {
+        ob_start();
+		
+        require MEMBERSHIP_PATH. 'templates/login-form.php';
+        return ob_get_clean();
+    }
+	public function profile_form() {
+        ob_start();
+		
+        require MEMBERSHIP_PATH. 'templates/profile-form.php';
+        return ob_get_clean();
+    }
+
+public function process_login() {
+
+    if ( isset($_POST['cmp_login_nonce']) &&
+         wp_verify_nonce($_POST['cmp_login_nonce'], 'cmp_login') ) {
+
+        $creds = [
+            'user_login'    => sanitize_text_field($_POST['username']),
+            'user_password' => sanitize_text_field($_POST['password']),
+            'remember'      => true
+        ];
+
+        $user = wp_signon($creds, false);
+
+        if ( is_wp_error($user) ) {
+            wp_redirect(add_query_arg('login', 'failed', wp_get_referer()));
+            exit;
+        }
+
+        wp_redirect(site_url('/my-account'));
+        exit;
+    }
+}
 
 
 	
 }
+
+
  // Initialize the class
 $shortcodesHandler = new ShortcodesHandler();
 ?>
