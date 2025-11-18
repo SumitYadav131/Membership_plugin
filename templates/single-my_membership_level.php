@@ -102,8 +102,19 @@ if (have_posts()) :
 	</form>
 
 </div>
+<?php
+$membership_type = get_post_meta(get_the_ID(), '_membership_type', true);
+$stripe_price_id = get_post_meta(get_the_ID(), '_stripe_price_id', true);
+
+// Fallback to one-time if empty
+if (!$membership_type) {
+    $membership_type = 'one_time';
+}
+?>
 
 <script>
+const membershipType = "<?php echo $membership_type; ?>";
+const stripePriceId = "<?php echo $stripe_price_id; ?>";
 const stripe = Stripe('pk_test_51JeCtcSBo56wci5DPBeFwFEHjVpsqxCC0p9ldlFwozD2wm9wSRXu2tQY7CKuDrM3NFcVQ8vWK8JHv3NxTOTAKVbx00Eirc5WTE'); // Replace with your publishable key
 const elements = stripe.elements();
 const card = elements.create('card', {style: {base: {fontSize: '16px', color: '#32325d'}}});
@@ -119,6 +130,7 @@ form.addEventListener('submit', async (e) => {
 	const email = document.getElementById('member_email').value;
 
 	// Create PaymentIntent on server
+	if (membershipType === "one_time") {
 	const response = await fetch('/wp-content/plugins/Membership/admin/partials/create_payment.php', {
 		method: 'POST',
 		headers: {'Content-Type': 'application/json'},
@@ -179,7 +191,53 @@ form.addEventListener('submit', async (e) => {
 			errorDiv.textContent = registerData.message || 'Error creating account.';
 		}
 	}
+} 
+if (membershipType === "subscription") {
+
+    const response = await fetch('/wp-content/plugins/Membership/admin/partials/create_subscription.php', {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email })
+    });
+
+    const data = await response.json();
+
+    const result = await stripe.confirmCardSetup(data.clientSecret, {
+        payment_method: {
+            card: card,
+            billing_details: { name, email }
+        }
+    });
+
+    if (result.error) {
+        errorDiv.textContent = result.error.message;
+        return;
+    }
+
+    // send payment method + price id to WP AJAX
+    const formData = new FormData(form);
+    formData.append("action", "register_after_payment");
+    formData.append("payment_method", result.setupIntent.payment_method);
+    formData.append("price_id", stripePriceId);
+    formData.append("plan_type", "subscription");
+
+    const register = await fetch("<?php echo admin_url('admin-ajax.php'); ?>", {
+        method: "POST",
+        body: formData
+    });
+
+    const out = await register.json();
+    if (out.success) {
+        alert("Subscription started!");
+        window.location.href = "/thank-you/";
+    } else {
+        errorDiv.textContent = out.message;
+    }
+}
+
+
 });
+
 </script>
 
 <?php endwhile; endif;

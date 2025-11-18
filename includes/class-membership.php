@@ -78,6 +78,9 @@ class Membership {
         add_action('admin_menu', array(&$this, 'plugin_menu'));
 		add_action('save_post', array(&$this, 'save_postdata'));
 		add_filter('template_include', array(&$this, 'my_membership_level_single_template'));
+		add_action('add_meta_boxes', array($this, 'add_membership_level_metabox'));
+        add_action('save_post_my_membership_level', array($this, 'save_membership_level_meta'));
+
 
 
 
@@ -428,5 +431,73 @@ class Membership {
 		}
 		return $template;
 	}
+	
+	public function add_membership_level_metabox() {
+		add_meta_box(
+			'membership_level_settings',
+			'Membership Level Settings',
+			array($this, 'render_membership_level_metabox'),
+			'my_membership_level',
+			'normal',
+			'high'
+		);
+	}
+	
+	public function render_membership_level_metabox($post) {
+
+		wp_nonce_field('membership_level_meta_nonce_action', 'membership_level_meta_nonce');
+
+		$membership_type = get_post_meta($post->ID, '_membership_type', true);
+		$stripe_price_id = get_post_meta($post->ID, '_stripe_price_id', true);
+		?>
+
+		<style>
+			.membership-meta-field { margin-bottom: 15px; }
+		</style>
+
+		<div class="membership-meta-field">
+			<label><strong>Membership Type:</strong></label><br>
+			<select name="membership_type">
+				<option value="one_time" <?php selected($membership_type, 'one_time'); ?>>One Time Payment</option>
+				<option value="subscription" <?php selected($membership_type, 'subscription'); ?>>Recurring Subscription</option>
+			</select>
+		</div>
+
+		<div class="membership-meta-field">
+			<label><strong>Stripe Price ID (for subscription):</strong></label><br>
+			<input type="text" name="stripe_price_id" value="<?php echo esc_attr($stripe_price_id); ?>" style="width:100%;">
+			<p style="color:#555;">Enter Stripe Price ID (e.g., <code>price_123xyz</code>)</p>
+		</div>
+
+    <?php
+	}
+	
+	public function save_membership_level_meta($post_id) {
+
+		// Verify nonce
+		if (!isset($_POST['membership_level_meta_nonce']) ||
+			!wp_verify_nonce($_POST['membership_level_meta_nonce'], 'membership_level_meta_nonce_action')) {
+			return;
+		}
+
+		// Prevent autosave
+		if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return;
+
+		// Check permission
+		if (!current_user_can('edit_post', $post_id)) return;
+
+		// Save Membership Type
+		if (isset($_POST['membership_type'])) {
+			update_post_meta($post_id, '_membership_type', sanitize_text_field($_POST['membership_type']));
+		}
+
+		// Save Stripe Price ID
+		if (isset($_POST['stripe_price_id'])) {
+			update_post_meta($post_id, '_stripe_price_id', sanitize_text_field($_POST['stripe_price_id']));
+		}
+	}
+
+
+
 
 }

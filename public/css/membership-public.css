@@ -76,7 +76,7 @@ fieldset {
 }
 
 legend {
-   font-family: var(--e-global-typography-primary-font-family), Sans-serif !important;
+  font-family: var(--e-global-typography-primary-font-family), Sans-serif !important;
   font-weight: 600;
   line-height: 1.8em;
   font-size: 20px;
@@ -115,8 +115,53 @@ form#membership-form fieldset label {
   margin-top: 15px;
 }
 
-form#membership-form #submitBtn{
-   padding: 12px 28px;
-   border-radius: 6px;
-   border: 2px solid white;
+form#membership-form #submitBtn {
+  padding: 12px 28px;
+  border-radius: 6px;
+  border: 2px solid white;
+}
+
+/* Account page  */
+
+.md-profile-settings {
+  background-color: #6c757d;
+  padding: 20px 20px;
+}
+
+.md-profile-setting-listings {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.md-profile-setting-listings li a {
+  color: white;
+  font-size: 18px;
+}
+
+.md-profile-setting-listings hr {
+  margin: 0;
+  color: white;
+}
+
+.md-profile-settings {
+  width: 35%;
+}
+.md-profile-settings-menu {
+  width: 62%;
+}
+.md-profile-options {
+  display: flex;
+  gap: 20px;
+}
+
+.md-profile-field-cont {
+  display: flex;
+  gap: 15px;
+}
+.profile-field {
+  width: 45%;
+}
+.profile-save-btn{
+  margin-top: 10px;
 }
