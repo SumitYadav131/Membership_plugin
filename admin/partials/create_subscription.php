@@ -1,37 +1,35 @@
 <?php
-// create-payment-intent.php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 header('Content-Type: application/json');
-
-// include Stripe lib (adjust path if different)
-
-
-
 require_once '/home1/mydevits/public_html/alqimi/wp-content/plugins/Membership/lib/init.php';
-
-// Set your secret key (server-side only)
-\Stripe\Stripe::setApiKey('sk_test_51JeCtcSBo56wci5DRXTInJi6EjyQVvLrFiM1H8CpFAklVdKXEevdbItOnS3smrWZuhdm6PFknppO7J5qwnSVF3mW00ywvc7RmJ'); // <-- REPLACE
-
+\Stripe\Stripe::setApiKey('sk_test_51JeCtcSBo56wci5DRXTInJi6EjyQVvLrFiM1H8CpFAklVdKXEevdbItOnS3smrWZuhdm6PFknppO7J5qwnSVF3mW00ywvc7RmJ');
+require_once('/home1/mydevits/public_html/alqimi//wp-load.php'); // Adjust path to your WordPress root
 
 $input = json_decode(file_get_contents("php://input"), true);
+$member_email = sanitize_email($input['member_email']);
 
 try {
-    // 1. Create Customer
-    $customer = \Stripe\Customer::create([
-        'email' => $input['member_email'],
-    ]);
+    // Get or create WP user
+    $user = get_user_by('email', $member_email);
+    $user_id = $user ? $user->ID : null;
 
-    // 2. Create SetupIntent
+    // Use existing function from MemberajaxHandler
+    $customer_id = (new MemberajaxHandler())->get_or_create_customer($member_email, $user_id);
+
+    // Create SetupIntent for that customer
     $setupIntent = \Stripe\SetupIntent::create([
-        'customer' => $customer->id,
+        'customer' => $customer_id,
         'payment_method_types' => ['card'],
     ]);
 
     echo json_encode([
         'clientSecret' => $setupIntent->client_secret,
-        'customer_id' => $customer->id
+        'customer_id' => $customer_id
     ]);
-
 } catch (Exception $e) {
     echo json_encode(['error' => $e->getMessage()]);
 }
 exit;
+?>

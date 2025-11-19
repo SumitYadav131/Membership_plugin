@@ -115,7 +115,7 @@ if (!$membership_type) {
 <script>
 const membershipType = "<?php echo $membership_type; ?>";
 const stripePriceId = "<?php echo $stripe_price_id; ?>";
-const stripe = Stripe('pk_test_51JeCtcSBo56wci5DPBeFwFEHjVpsqxCC0p9ldlFwozD2wm9wSRXu2tQY7CKuDrM3NFcVQ8vWK8JHv3NxTOTAKVbx00Eirc5WTE'); // Replace with your publishable key
+const stripe = Stripe('pk_test_51JeCtcSBo56wci5DPBeFwFEHjVpsqxCC0p9ldlFwozD2wm9wSRXu2tQY7CKuDrM3NFcVQ8vWK8JHv3NxTOTAKVbx00Eirc5WTE');
 const elements = stripe.elements();
 const card = elements.create('card', {style: {base: {fontSize: '16px', color: '#32325d'}}});
 card.mount('#card-element');
@@ -124,121 +124,88 @@ const form = document.getElementById('membership-form');
 const errorDiv = document.getElementById('card-errors');
 
 form.addEventListener('submit', async (e) => {
-	e.preventDefault();
+    e.preventDefault();
 
-	const name = document.getElementById('member_name').value;
-	const email = document.getElementById('member_email').value;
+    const name = document.getElementById('member_name').value;
+    const email = document.getElementById('member_email').value;
+    const password = document.getElementById('member_password').value;
 
-	// Create PaymentIntent on server
-	if (membershipType === "one_time") {
-	const response = await fetch('/wp-content/plugins/Membership/admin/partials/create_payment.php', {
-		method: 'POST',
-		headers: {'Content-Type': 'application/json'},
-		body: JSON.stringify({ amount: 2000, currency: 'usd' }) // $20.00
-	});
-	const data = await response.json();
+    if (membershipType === "one_time") {
+        // 1️⃣ Create PaymentIntent on server
+        const response = await fetch('/wp-content/plugins/Membership/admin/partials/create_payment.php', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ amount: 2000, currency: 'usd', member_email: email })
+        });
+        const data = await response.json();
+        if (data.error) { errorDiv.textContent = data.error; return; }
 
-	if (data.error) {
-		errorDiv.textContent = data.error;
-		return;
-	}
+        // 2️⃣ Confirm card payment
+        const result = await stripe.confirmCardPayment(data.clientSecret, {
+            payment_method: {
+                card: card,
+                billing_details: { name, email }
+            }
+        });
 
-	const clientSecret = data.clientSecret;
-
-	// Confirm payment with Stripe
-	const result = await stripe.confirmCardPayment(clientSecret, {
-		payment_method: {
-			card: card,
-			billing_details: { name: name, email: email }
-		}
-	});
-
-	if (result.error) {
-		errorDiv.textContent = result.error.message;
-		// Payment successful — now create user via AJAX
-		const formData = new FormData(form);
-		formData.append('action', 'register_after_payment');
-	
-
-		const register = await fetch('<?php echo admin_url("admin-ajax.php"); ?>', {
-			method: 'POST',
-			body: formData
-		});
-		const registerData = await register.json();
-
-		if (registerData.success) {
-			alert('Account created successfully!');
-			window.location.href = '/thank-you/';
-		} else {
-			errorDiv.textContent = registerData.message || 'Error creating account.';
-		}
-	} else if (result.paymentIntent && result.paymentIntent.status === 'succeeded') {
-		// Payment successful — now create user via AJAX
-		const formData = new FormData(form);
-		formData.append('action', 'register_after_payment');
-		formData.append('payment_id', result.paymentIntent.id);
-
-		const register = await fetch('<?php echo admin_url("admin-ajax.php"); ?>', {
-			method: 'POST',
-			body: formData
-		});
-		const registerData = await register.json();
-
-		if (registerData.success) {
-			alert('Account created successfully!');
-			window.location.href = '/thank-you/';
-		} else {
-			errorDiv.textContent = registerData.message || 'Error creating account.';
-		}
-	}
-} 
-if (membershipType === "subscription") {
-
-    const response = await fetch('/wp-content/plugins/Membership/admin/partials/create_subscription.php', {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email })
-    });
-
-    const data = await response.json();
-
-    const result = await stripe.confirmCardSetup(data.clientSecret, {
-        payment_method: {
-            card: card,
-            billing_details: { name, email }
+        if (result.error) {
+            errorDiv.textContent = result.error.message;
+            return;
         }
-    });
 
-    if (result.error) {
-        errorDiv.textContent = result.error.message;
-        return;
+        // 3️⃣ Register user in WP
+        const formData = new FormData(form);
+        formData.append('action', 'register_after_payment');
+        formData.append('plan_type', 'one_time');
+        formData.append('payment_id', result.paymentIntent.id);
+
+        const register = await fetch('<?php echo admin_url("admin-ajax.php"); ?>', { method: 'POST', body: formData });
+        const out = await register.json();
+
+        if (out.success) {
+            window.location.href = '/thank-you/';
+        } else {
+            errorDiv.textContent = out.message;
+        }
     }
 
-    // send payment method + price id to WP AJAX
-    const formData = new FormData(form);
-    formData.append("action", "register_after_payment");
-    formData.append("payment_method", result.setupIntent.payment_method);
-    formData.append("price_id", stripePriceId);
-    formData.append("plan_type", "subscription");
+    if (membershipType === "subscription") {
+        // 1️⃣ Create SetupIntent on server
+        const response = await fetch('/wp-content/plugins/Membership/admin/partials/create_subscription.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ member_email: email })
+        });
+        const data = await response.json();
+        if (data.error) { errorDiv.textContent = data.error; return; }
 
-    const register = await fetch("<?php echo admin_url('admin-ajax.php'); ?>", {
-        method: "POST",
-        body: formData
-    });
+        // 2️⃣ Confirm card setup
+        const result = await stripe.confirmCardSetup(data.clientSecret, {
+            payment_method: { card: card, billing_details: { name, email } }
+        });
 
-    const out = await register.json();
-    if (out.success) {
-        alert("Subscription started!");
-        window.location.href = "/thank-you/";
-    } else {
-        errorDiv.textContent = out.message;
+        if (result.error) { errorDiv.textContent = result.error.message; return; }
+
+        // 3️⃣ Register user and create subscription
+        const formData = new FormData(form);
+        formData.append('action', 'register_after_payment');
+        formData.append('plan_type', 'subscription');
+        formData.append('payment_method', result.setupIntent.payment_method);
+        formData.append('price_id', stripePriceId);
+		formData.append('customer_id', data.customer_id);
+
+        const register = await fetch('<?php echo admin_url("admin-ajax.php"); ?>', { method: 'POST', body: formData });
+        const out = await register.json();
+
+        if (out.success) {
+            window.location.href = '/thank-you/';
+        } else {
+            errorDiv.textContent = out.message;
+        }
     }
-}
-
-
 });
-
 </script>
+
 
 <?php endwhile; endif;
 get_footer();
