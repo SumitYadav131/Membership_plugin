@@ -75,7 +75,7 @@ if (!is_user_logged_in()):
 
         <hr>
 
-        <h3>Payment History</h3>
+        <h3>Payment History te</h3>
 
         <table class="md-payment-table">
             <thead>
@@ -88,20 +88,21 @@ if (!is_user_logged_in()):
             </thead>
             <tbody>
                 <?php
-                $payments = md_get_user_payments($user->ID);
-                if ($payments):
-                    foreach ($payments as $pay):
-                        echo '<tr>';
-                        echo '<td>' . esc_html(date('F j, Y', strtotime($pay->created_at))) . '</td>';
-                        echo '<td>' . esc_html(ucfirst($pay->method)) . '</td>';
-                        echo '<td>$' . esc_html($pay->amount) . '</td>';
-                        echo '<td>' . esc_html($pay->status) . '</td>';
-                        echo '</tr>';
-                    endforeach;
-                else:
-                    echo '<tr><td colspan="4">No payments found.</td></tr>';
-                endif;
-                ?>
+					$payments = md_get_user_payments($user->ID);
+
+					if ($payments):
+						foreach ($payments as $pay):
+							echo '<tr>';
+							echo '<td>' . esc_html(date('F j, Y', strtotime($pay->created_at))) . '</td>';
+							echo '<td>' . esc_html(ucfirst($pay->gateway)) . '</td>';
+							echo '<td>$' . esc_html($pay->total) . '</td>';
+							echo '<td>' . esc_html($pay->status) . '</td>';
+							echo '</tr>';
+						endforeach;
+					else:
+						echo '<tr><td colspan="4">No payments found.</td></tr>';
+					endif;
+				?>
             </tbody>
         </table>
 
@@ -257,7 +258,7 @@ function md_get_user_payments($user_id)
 {
     global $wpdb;
 
-    $table = $wpdb->prefix . 'md_payments';
+    $table = $wpdb->prefix . 'md_subscriptions';
 
     return $wpdb->get_results(
         $wpdb->prepare("SELECT * FROM $table WHERE user_id = %d ORDER BY created_at DESC", $user_id)
