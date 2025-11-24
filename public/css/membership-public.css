@@ -177,3 +177,16 @@ form#membership-form #submitBtn {
   color: white;
   margin-top: 0;
 }
+.field_wrapper {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+}
+.cfm-password-field,
+.password-field,
+.country-field,
+.pincode-field,
+.state-field,
+.city-field {
+  width: 50%;
+}

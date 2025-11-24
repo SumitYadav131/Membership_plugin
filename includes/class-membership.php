@@ -80,6 +80,7 @@ class Membership {
 		add_filter('template_include', array(&$this, 'my_membership_level_single_template'));
 		add_action('add_meta_boxes', array($this, 'add_membership_level_metabox'));
         add_action('save_post_my_membership_level', array($this, 'save_membership_level_meta'));
+		add_filter('the_content', array(&$this, 'my_membership_restrict_content_by_levels'));
 
 
 
@@ -342,16 +343,27 @@ class Membership {
         
 
         echo '<h4>' . __("Select the membership level that can access this content:", 'simple-membership') . "</h4>";
-        $query = "SELECT * FROM " . $wpdb->prefix . "md_membership_levels WHERE  id !=1 ";
-        $levels = $wpdb->get_results($query, ARRAY_A);
-		$selected_levels = get_post_meta($id, '_swpm_protection_levels', true);
-	
-        foreach ($levels as $level) {
-			$is_checked = (is_array($selected_levels) && in_array($level['id'], $selected_levels)) ? true : false;
+        $levels = get_posts([
+			'post_type'      => 'my_membership_level',
+			'posts_per_page' => -1,
+			'post_status'    => 'publish',
+			'exclude'        => [1], // Exclude ID 1 like your old query
+		]);
 
-            echo '<input type="checkbox" ' . ($is_checked ? "checked='checked'" : "") .
-            ' name="swpm_protection_level[' . $level['id'] . ']" value="' . $level['id'] . '" /> ' . $level['name'] . "<br/>";
-        }
+		$selected_levels = get_post_meta($id, '_swpm_protection_levels', true);
+
+		foreach ($levels as $level) {
+			$level_id = $level->ID;
+			$level_name = $level->post_title;
+
+			// Check if this level is selected
+			$is_checked = (is_array($selected_levels) && in_array($level_id, $selected_levels)) ? true : false;
+
+			echo '<input type="checkbox" ' . ($is_checked ? "checked='checked'" : "") .
+				 ' name="swpm_protection_level[' . $level_id . ']" value="' . $level_id . '" /> ' 
+				 . esc_html($level_name) . "<br/>";
+		}
+
     }
 	
 	 public function save_postdata($post_id) {
@@ -495,6 +507,33 @@ class Membership {
 		if (isset($_POST['stripe_price_id'])) {
 			update_post_meta($post_id, '_stripe_price_id', sanitize_text_field($_POST['stripe_price_id']));
 		}
+	}
+	
+	function my_membership_restrict_content_by_levels($content) {
+
+		if (is_admin()) {
+			return $content;
+		}
+
+		global $post;
+		$required_levels = get_post_meta($post->ID, '_swpm_protection_levels', true);
+
+		// If no restriction set → show content
+		if (empty($required_levels)) {
+			return $content;
+		}
+
+		// Get logged-in user membership levels
+		$user_levels = get_user_meta(get_current_user_id(), 'my_membership_levels', true);
+		$user_levels = is_array($user_levels) ? $user_levels : [];
+
+		// If user has at least one required level → allow content
+		if (array_intersect($required_levels, $user_levels)) {
+			return $content;
+		}
+
+		// Otherwise restrict
+		return '<p>You do not have permission to view this content. Please upgrade (or log in).</p>';
 	}
 
 

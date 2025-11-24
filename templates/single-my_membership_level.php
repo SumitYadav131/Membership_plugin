@@ -96,7 +96,7 @@ if (have_posts()) :
 			</div>
 
 		</fieldset>
-
+		<input type="hidden" name="membership_id" id="membership_id" value="<?php echo get_the_ID();?>" />
 		<button type="submit" id="submitBtn">Join & Pay Now</button>
 		
 	</form>
@@ -115,6 +115,7 @@ if (!$membership_type) {
 <script>
 const membershipType = "<?php echo $membership_type; ?>";
 const stripePriceId = "<?php echo $stripe_price_id; ?>";
+
 const stripe = Stripe('pk_test_51JeCtcSBo56wci5DPBeFwFEHjVpsqxCC0p9ldlFwozD2wm9wSRXu2tQY7CKuDrM3NFcVQ8vWK8JHv3NxTOTAKVbx00Eirc5WTE');
 const elements = stripe.elements();
 const card = elements.create('card', {style: {base: {fontSize: '16px', color: '#32325d'}}});
@@ -129,6 +130,7 @@ form.addEventListener('submit', async (e) => {
     const name = document.getElementById('member_name').value;
     const email = document.getElementById('member_email').value;
     const password = document.getElementById('member_password').value;
+	const membershipID = document.getElementById('membership_id').value;
 
     if (membershipType === "one_time") {
         // 1️⃣ Create PaymentIntent on server
@@ -193,6 +195,7 @@ form.addEventListener('submit', async (e) => {
         formData.append('payment_method', result.setupIntent.payment_method);
         formData.append('price_id', stripePriceId);
 		formData.append('customer_id', data.customer_id);
+		formData.append('membershipid', membershipID);
 
         const register = await fetch('<?php echo admin_url("admin-ajax.php"); ?>', { method: 'POST', body: formData });
         const out = await register.json();

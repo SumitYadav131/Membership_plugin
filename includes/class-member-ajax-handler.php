@@ -20,6 +20,7 @@ class MemberajaxHandler {
         $email     = sanitize_email($_POST['member_email']);
         $password  = sanitize_text_field($_POST['member_password']);
         $name      = sanitize_text_field($_POST['member_name']);
+		$membershipid = sanitize_text_field($_POST['membershipid']);
 		
 
         try {
@@ -30,7 +31,7 @@ class MemberajaxHandler {
                 $payment_method = sanitize_text_field($_POST['payment_method']);
                 $price_id       = sanitize_text_field($_POST['price_id']);
 				$customer_id      = sanitize_text_field($_POST['customer_id']);
-                $this->handle_subscription($email, $password, $name, $payment_method, $price_id,$customer_id );
+                $this->handle_subscription($email, $password, $name, $payment_method, $price_id,$customer_id,$membershipid );
             } else {
                 wp_send_json(['success' => false, 'message' => 'Invalid plan type.']);
             }
@@ -63,15 +64,16 @@ class MemberajaxHandler {
     /**
      * Handle subscription registration
      */
-    private function handle_subscription($email, $password, $name, $payment_method, $price_id,$customer_id) {
+    private function handle_subscription($email, $password, $name, $payment_method, $price_id,$customer_id,$membershipid) {
         $user = get_user_by('email', $email);
         $user_wp_id = $user ? $user->ID : null;
         $payment_method;
+		global $wpdb;
 
 
         // Get or create Stripe customer
-   $this->get_or_create_customer($email, $user_wp_id);
- $customer_id = $customer_id;
+		$this->get_or_create_customer($email, $user_wp_id);
+		$customer_id = $customer_id;
         // Attach payment method safely
         $pm = \Stripe\PaymentMethod::retrieve($payment_method);
 
@@ -105,6 +107,24 @@ class MemberajaxHandler {
 
         // Store Stripe customer ID permanently
         update_user_meta($user_id, 'stripe_customer_id', $customer_id);
+		update_user_meta($user_id, 'stripe_subscription_id', $subscription->id);
+
+
+		$wpdb->insert(
+			$wpdb->prefix . 'md_subscriptions',
+			[
+				'user_id'               => $user_id,
+				'membership_id'         => $membershipid, // or your internal plan ID
+				'price'                 => $subscription->plan->amount / 100,
+				'total'                 => $subscription->plan->amount / 100,
+				'gateway'               => 'stripe',
+				'period_type'           => $subscription->plan->interval, // month, year
+				'status'                => $subscription->status,          // active
+				'subscription_id'=> $subscription->id
+			]
+		);
+
+
 
         wp_send_json(['success' => true, 'message' => 'Subscription created and user registered successfully.']);
     }
