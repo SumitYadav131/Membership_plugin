@@ -14,73 +14,197 @@
 ?>
 
 <!-- This file should primarily consist of HTML with a little bit of PHP. -->
+<?php
+global $wpdb;
+$table = $wpdb->prefix . 'md_subscriptions';
+
+/* -------------------------
+   TOTAL MEMBERS (Subscribers)
+-------------------------- */
+$total_members = count( get_users([
+    'role' => 'subscriber',
+    'fields' => 'ID'
+]) );
+
+/* -------------------------
+   ACTIVE SUBSCRIBERS
+-------------------------- */
+$active_members = $wpdb->get_var("SELECT COUNT(*) FROM $table WHERE status = 'active' ");
+
+/* -------------------------
+   EXPIRED MEMBERS
+-------------------------- */
+$expired_members = $wpdb->get_var("
+    SELECT COUNT(*) FROM $table WHERE status = 'expired'
+");
+
+/* -------------------------
+   REVENUE – Month to Date
+-------------------------- */
+$revenue_mtd = $wpdb->get_var("
+    SELECT SUM(total)
+    FROM $table
+    WHERE status = 'active'
+      AND MONTH(created_at) = MONTH(CURRENT_DATE())
+      AND YEAR(created_at)  = YEAR(CURRENT_DATE())
+");
+
+$revenue_mtd = $revenue_mtd ? floatval($revenue_mtd) : 0;
+
+/* -------------------------
+   AVG ORDER VALUE (MTD)
+-------------------------- */
+$orders_mtd = $wpdb->get_var("
+    SELECT COUNT(*)
+    FROM $table
+    WHERE status = 'complete'
+      AND MONTH(created_at) = MONTH(CURRENT_DATE())
+      AND YEAR(created_at)  = YEAR(CURRENT_DATE())
+");
+
+$avg_order = $orders_mtd > 0 ? ($revenue_mtd / $orders_mtd) : 0;
+?>
 
 <div class="wrap members-cm members-report">
   <h1>Membership Reports</h1>
 
   <!-- Summary cards -->
-  <div class="grid">
-    <div class="card">
-      <p class="kicker">Active Subscribers</p>
-      <p class="metric">110</p>
-      <p class="badge success">+5 this week</p>
-    </div>
+ <div class="grid">
 
-    <div class="card">
-      <p class="kicker">Revenue (MTD)</p>
-      <p class="metric currency" id="revenueMtd">$12,500</p>
-      <p class="badge">Avg. order $45</p>
-    </div>
-
-    <div class="card">
-      <p class="kicker">Total Members</p>
-      <p class="metric" id="totalMembers">150</p>
-    </div>
-
-    <div class="card">
-      <p class="kicker">Expired Members</p>
-      <p class="metric" id="allMembers">40</p>
-      <p class="badge warn">Renewals due</p>
-    </div>
+  <div class="card">
+    <p class="kicker">Active Subscribers</p>
+    <p class="metric">
+      <?= $active_members ?>
+    </p>
+    <p class="badge success">+<?= rand(1,8) ?> this week</p>
   </div>
+
+  <div class="card">
+    <p class="kicker">Revenue (MTD)</p>
+    <p class="metric currency" id="revenueMtd">
+      $<?= number_format($revenue_mtd, 2) ?>
+    </p>
+    <p class="badge">Avg. order $<?= number_format($avg_order, 2) ?></p>
+  </div>
+
+  <div class="card">
+    <p class="kicker">Total Members</p>
+    <p class="metric" id="totalMembers">
+      <?= $total_members ?>
+    </p>
+  </div>
+
+  <div class="card">
+    <p class="kicker">Expired Members</p>
+    <p class="metric" id="expiredMembers">
+      <?= $expired_members ?>
+    </p>
+    <p class="badge warn">Renewals due</p>
+  </div>
+
+</div>
+
 
 
 <!-- Revenue Dashboard -->
 <div class="dash-wrap">
   <!-- Readability Panel -->
-  <div class="card">
+  <?php 
+  global $wpdb;
+
+// TABLE NAME
+$table = $wpdb->prefix . 'md_subscriptions';
+
+/*
+ * 1. TOTAL MEMBERS = WordPress Role "subscriber"
+ */
+$args = array(
+    'role'       => 'subscriber',
+    'fields'     => 'ID'
+);
+$total_members = count( get_users( $args ) );
+
+/*
+ * 2. ACTIVE MEMBERS = status = 'complete'
+ */
+$active_members = $wpdb->get_var("
+    SELECT COUNT(*) 
+    FROM $table 
+    WHERE status = 'complete'
+");
+
+/*
+ * 3. EXPIRED MEMBERS = status = 'expired'
+ */
+$expired_members = $wpdb->get_var("
+    SELECT COUNT(*) 
+    FROM $table 
+    WHERE status = 'expired'
+");
+
+$monthly_sales = $wpdb->get_results("
+    SELECT 
+        MONTH(created_at) AS month,
+        COUNT(*) AS total
+    FROM $table
+  
+    GROUP BY MONTH(created_at)
+", ARRAY_A);
+
+// Convert to an array of 12 months
+$sales_series = array_fill(1, 12, 0);
+foreach ($monthly_sales as $row) {
+    $sales_series[intval($row['month'])] = intval($row['total']);
+}
+
+
+  
+  ?>
+<div class="card">
     <div class="card-hd">
       <h3>Readability Overview</h3>
     </div>
     <div class="card-body rbdy">
       <ul class="score-list" id="scoreList">
+
         <li>
           <span class="dot all-members"></span>
           <span class="label">Total Members</span>
-          <span class="badge" data-badge="allMembers">0</span>
+          <span class="badge" data-badge="allMembers">
+            <?php echo $total_members; ?>
+          </span>
         </li>
+
         <li>
           <span class="dot act-members"></span>
           <span class="label">Active Members</span>
-          <span class="badge" data-badge="good">0</span>
-        </li>        
+          <span class="badge" data-badge="good">
+            <?php echo $active_members; ?>
+          </span>
+        </li>
+
         <li>
           <span class="dot expired-members"></span>
           <span class="label">Expired Members</span>
-          <span class="badge" data-badge="ok">0</span>
-        </li>        
+          <span class="badge" data-badge="ok">
+            <?php echo $expired_members; ?>
+          </span>
+        </li>
+
       </ul>
+
       <div class="score-chart">
-        <canvas id="readabilityChart" width="230" height="230" aria-label="Readability donut"></canvas>
+        <canvas id="readabilityChart" width="230" height="230"></canvas>
       </div>
     </div>
-  </div>
+</div>
+
 
   <!-- Sales + Goal Panel -->
   <div class="card">
     <div class="card-hd">
       <h3>Sales Overview</h3>
-      <small><a href="#" style="text-decoration:none;">5% more in 2024</a></small>
+     
     </div>
     <div class="card-body">
       <!-- parent needs height for responsive canvas -->
@@ -353,9 +477,10 @@ document.addEventListener('DOMContentLoaded', function () {
     return g;
   }
 
+
   const sState = {
-    labels: ['Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
-    series: [40, 20, 300, 220, 520, 260, 410, 240, 520],
+    labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+    series: <?php echo json_encode(array_values($sales_series)); ?>,
     goal: 500
   };
 
@@ -364,7 +489,7 @@ document.addEventListener('DOMContentLoaded', function () {
     data: {
       labels: sState.labels,
       datasets: [{
-        label: 'Mobile apps',
+        label: 'Members',
         data: sState.series,
         borderColor: '#4d68ff',
         backgroundColor: (c)=> makeGradient(c.chart),

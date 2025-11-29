@@ -10,13 +10,27 @@ if (!is_user_logged_in()):
 <?php else:
 
     $user = wp_get_current_user();
-    $membership_id = get_user_meta($user->ID, 'membership_level', true);
-    $membership_status = get_user_meta($user->ID, 'membership_status', true);
-    $membership_expiry = get_user_meta($user->ID, 'membership_expiry', true);
+    $member_street = get_user_meta($user->ID, 'member_street', true);
+    $member_city = get_user_meta($user->ID, 'member_city', true);
+    $member_state = get_user_meta($user->ID, 'member_state', true);
+	$member_pincode = get_user_meta($user->ID, 'member_pincode', true);
+	$member_country = get_user_meta($user->ID, 'member_country', true);
 
-    $membership_name = $membership_id
-        ? get_post_meta($membership_id, 'md_level_name', true)
-        : 'No active membership';
+    $membership_info = get_membership_info();
+
+    if (isset($membership_info)) {
+        $membership_id = $membership_info[0]->membership_id;
+        $membership_name = get_the_title($membership_id);
+        $membership_status = $membership_info[0]->status;
+        $subscription_id = $membership_info[0]->subscription_id;
+        $create_date = $membership_info[0]->created_at;
+        $date = explode(' ', $create_date);
+        $date_created = $date[0];
+        $period_type = $membership_info[0]->period_type;
+        $curr_date = date('Y-m-d');
+        $expire_date = date('Y-m-d', strtotime($curr_date . '+30 days'));
+    }
+
 
     $expiry_text = $membership_expiry
         ? date('F j, Y', strtotime($membership_expiry))
@@ -25,7 +39,6 @@ if (!is_user_logged_in()):
     $updated = isset($_GET['updated']);
 
     ?>
-
 
     <div class="md-profile-options">
         <div class="md-profile-settings">
@@ -82,33 +95,33 @@ if (!is_user_logged_in()):
 
                             <div class="address-field">
                                 <label>Street Address</label><br>
-                                <input type="text" name="street_address" value="<?php echo esc_attr($user->street_address); ?>"
+                                <input type="text" name="street_address" value="<?php echo esc_attr($member_street); ?>"
                                     required>
                             </div>
                             <div class="field_wrapper">
                                 <div class="city-field">
                                     <label>City</label><br>
-                                    <input type="text" name="city" value="<?php echo esc_attr($user->city); ?>" required>
+                                    <input type="text" name="city" value="<?php echo esc_attr($member_city); ?>" required>
                                 </div>
 
                                 <div class="state-field">
                                     <label>State / Province:
                                     </label><br>
-                                    <input type="text" name="state" value="<?php echo esc_attr($user->state); ?>" required>
+                                    <input type="text" name="state" value="<?php echo esc_attr($member_state); ?>" required>
                                 </div>
                             </div>
                             <div class="field_wrapper">
                                 <div class="pincode-field">
                                     <label>Postal Code / Pincode
                                     </label><br>
-                                    <input type="number" name="pincode" value="<?php echo esc_attr($user->pincode); ?>"
+                                    <input type="number" name="pincode" value="<?php echo esc_attr($member_pincode); ?>"
                                         required>
                                 </div>
 
                                 <div class="country-field">
                                     <label>Country
                                     </label><br>
-                                    <input type="text" name="pincode" value="<?php echo esc_attr($user->country); ?>" required>
+                                    <input type="text" name="pincode" value="<?php echo esc_attr($member_country); ?>" required>
                                 </div>
                             </div>
                             <div class="field_wrapper">
@@ -150,19 +163,18 @@ if (!is_user_logged_in()):
                 <div class="md-profile-membershipinfo setting-menu-listing">
                     <h3>Membership Information</h3>
 
-                    <p><strong>Plan:</strong> <?php echo esc_html($membership_name); ?></p>
+                    <p><strong>Plan:</strong> <?php print_r($membership_name); ?></p>
                     <p><strong>Status:</strong> <?php echo esc_html($membership_status); ?></p>
-                    <p><strong>Expires On:</strong> <?php echo esc_html($expiry_text); ?></p>
+                    <p><strong>Period Type:</strong> <?php echo esc_html($period_type); ?></p>
+                    <p><strong>Expires On:</strong> <?php echo esc_html($expire_date); ?></p>
 
                     <?php if ($membership_id): ?>
                         <a href="/membership-upgrade" class="button">Upgrade Membership</a>
+                        <button type="submit" data-sid="<?php echo $subscription_id ?>" id="membership_cancel"
+                            name="md_cancel_membership" class="button md-cancel-btn">
+                            Cancel Membership
+                        </button>
 
-                        <form method="post" class="md-cancel-form">
-                            <?php wp_nonce_field('md_cancel_membership', 'md_cancel_nonce'); ?>
-                            <button type="submit" name="md_cancel_membership" class="button md-cancel-btn">
-                                Cancel Membership
-                            </button>
-                        </form>
                     <?php else: ?>
                         <a href="/membership-levels" class="button">Choose a Membership</a>
                     <?php endif; ?>
@@ -171,6 +183,34 @@ if (!is_user_logged_in()):
             }
             ?>
 
+
+            <script>
+                jQuery(document).ready(function ($) {
+
+                    $('#membership_cancel').on('click', function (e) {
+                        e.preventDefault();
+
+                        var sid = $(this).data('sid');
+
+                        $.ajax({
+                            url: '<?php echo admin_url("admin-ajax.php"); ?>', // WP AJAX endpoint
+                            type: 'POST',
+                            data: {
+                                action: 'membership_cancel_demand', // required
+                                sus_id: sid
+                            },
+                            success: function (response) {
+                                console.log('Server response:', response);
+                              
+                            },
+                            error: function (xhr, status, error) {
+                                console.error('AJAX Error:', error);
+                            }
+                        });
+                    });
+
+                });
+            </script>
 
             <?php
             if ($_GET['setting'] === 'paymentinfo') { ?>
@@ -238,6 +278,20 @@ function md_get_user_payments($user_id)
     return $wpdb->get_results(
         $wpdb->prepare("SELECT * FROM $table WHERE user_id = %d ORDER BY created_at DESC", $user_id)
     );
+}
+
+// get membership function
+function get_membership_info()
+{
+    global $wpdb;
+
+    $table = $wpdb->prefix . "md_subscriptions";
+
+    $user = get_current_user_id();
+
+    $result = $wpdb->get_results("SELECT * FROM $table where user_id = $user");
+
+    return $result;
 }
 
 ?>

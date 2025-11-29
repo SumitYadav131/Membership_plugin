@@ -1,0 +1,15 @@
+[25-Nov-2025 02:50:07 America/Boise] PHP Fatal error:  Uncaught Error: Call to undefined function add_action() in /home1/mydevits/public_html/alqimi/wp-content/plugins/Membership/includes/class-member-ajax-handler.php:11
+Stack trace:
+#0 /home1/mydevits/public_html/alqimi/wp-content/plugins/Membership/includes/class-member-ajax-handler.php(336): MemberajaxHandler->__construct()
+#1 {main}
+  thrown in /home1/mydevits/public_html/alqimi/wp-content/plugins/Membership/includes/class-member-ajax-handler.php on line 11
+[25-Nov-2025 02:50:44 America/Boise] PHP Fatal error:  Uncaught Error: Call to undefined function add_action() in /home1/mydevits/public_html/alqimi/wp-content/plugins/Membership/includes/class-member-ajax-handler.php:11
+Stack trace:
+#0 /home1/mydevits/public_html/alqimi/wp-content/plugins/Membership/includes/class-member-ajax-handler.php(336): MemberajaxHandler->__construct()
+#1 {main}
+  thrown in /home1/mydevits/public_html/alqimi/wp-content/plugins/Membership/includes/class-member-ajax-handler.php on line 11
+[25-Nov-2025 02:51:00 America/Boise] PHP Fatal error:  Uncaught Error: Call to undefined function add_action() in /home1/mydevits/public_html/alqimi/wp-content/plugins/Membership/includes/class-member-ajax-handler.php:11
+Stack trace:
+#0 /home1/mydevits/public_html/alqimi/wp-content/plugins/Membership/includes/class-member-ajax-handler.php(336): MemberajaxHandler->__construct()
+#1 {main}
+  thrown in /home1/mydevits/public_html/alqimi/wp-content/plugins/Membership/includes/class-member-ajax-handler.php on line 11

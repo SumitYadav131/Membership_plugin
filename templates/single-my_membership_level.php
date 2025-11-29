@@ -131,6 +131,15 @@ form.addEventListener('submit', async (e) => {
     const email = document.getElementById('member_email').value;
     const password = document.getElementById('member_password').value;
 	const membershipID = document.getElementById('membership_id').value;
+	const member_street = document.getElementById('member_street').value;
+	const member_city = document.getElementById('member_city').value;
+	const member_state = document.getElementById('member_state').value;
+	const member_pincode = document.getElementById('member_pincode').value;
+	const member_country = document.getElementById('member_country').value;
+
+
+
+
 
     if (membershipType === "one_time") {
         // 1️⃣ Create PaymentIntent on server
