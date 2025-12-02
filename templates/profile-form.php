@@ -114,28 +114,65 @@ if (!is_user_logged_in()):
                                 <div class="pincode-field">
                                     <label>Postal Code / Pincode
                                     </label><br>
-                                    <input type="number" name="pincode" value="<?php echo esc_attr($member_pincode); ?>"
-                                        required>
+                                    <input type="number" name="pincode" value="<?php echo esc_attr($member_pincode); ?>" maxlength="6"  required>
                                 </div>
 
                                 <div class="country-field">
                                     <label>Country
-                                    </label><br>
-                                    <input type="text" name="pincode" value="<?php echo esc_attr($member_country); ?>" required>
+                                    </label><br> 
+
+                                    <select name="country" required>
+                                        <option value="">Select Country</option>
+
+                                        <?php
+                                        $countries = [
+                                            "Afghanistan","Albania","Algeria","Andorra","Angola","Antigua and Barbuda","Argentina","Armenia",
+                                            "Australia","Austria","Azerbaijan","Bahamas","Bahrain","Bangladesh","Barbados","Belarus",
+                                            "Belgium","Belize","Benin","Bhutan","Bolivia","Bosnia and Herzegovina","Botswana","Brazil",
+                                            "Brunei","Bulgaria","Burkina Faso","Burundi","Cambodia","Cameroon","Canada","Cape Verde",
+                                            "Central African Republic","Chad","Chile","China","Colombia","Comoros",
+                                            "Congo, Democratic Republic of the","Congo, Republic of the","Costa Rica","Croatia","Cuba",
+                                            "Cyprus","Czech Republic","Denmark","Djibouti","Dominica","Dominican Republic","East Timor",
+                                            "Ecuador","Egypt","El Salvador","Equatorial Guinea","Eritrea","Estonia","Eswatini","Ethiopia",
+                                            "Fiji","Finland","France","Gabon","Gambia","Georgia","Germany","Ghana","Greece","Grenada",
+                                            "Guatemala","Guinea","Guinea-Bissau","Guyana","Haiti","Honduras","Hungary","Iceland","India",
+                                            "Indonesia","Iran","Iraq","Ireland","Israel","Italy","Ivory Coast","Jamaica","Japan","Jordan",
+                                            "Kazakhstan","Kenya","Kiribati","Korea, North","Korea, South","Kosovo","Kuwait","Kyrgyzstan",
+                                            "Laos","Latvia","Lebanon","Lesotho","Liberia","Libya","Liechtenstein","Lithuania","Luxembourg",
+                                            "Madagascar","Malawi","Malaysia","Maldives","Mali","Malta","Marshall Islands","Mauritania",
+                                            "Mauritius","Mexico","Micronesia","Moldova","Monaco","Mongolia","Montenegro","Morocco",
+                                            "Mozambique","Myanmar","Namibia","Nauru","Nepal","Netherlands","New Zealand","Nicaragua",
+                                            "Niger","Nigeria","North Macedonia","Norway","Oman","Pakistan","Palau","Panama","Papua New Guinea",
+                                            "Paraguay","Peru","Philippines","Poland","Portugal","Qatar","Romania","Russia","Rwanda",
+                                            "Saint Kitts and Nevis","Saint Lucia","Saint Vincent and the Grenadines","Samoa","San Marino",
+                                            "Sao Tome and Principe","Saudi Arabia","Senegal","Serbia","Seychelles","Sierra Leone",
+                                            "Singapore","Slovakia","Slovenia","Solomon Islands","Somalia","South Africa","Spain","Sri Lanka",
+                                            "Sudan","South Sudan","Suriname","Sweden","Switzerland","Syria","Taiwan","Tajikistan","Tanzania",
+                                            "Thailand","Togo","Tonga","Trinidad and Tobago","Tunisia","Turkey","Turkmenistan","Tuvalu",
+                                            "Uganda","Ukraine","United Arab Emirates","United Kingdom","United States","Uruguay","Uzbekistan",
+                                            "Vanuatu","Vatican City","Venezuela","Vietnam","Yemen","Zambia","Zimbabwe"
+                                        ];
+
+                                        foreach ($countries as $country) {
+                                            $selected = ($member_country === $country) ? 'selected' : '';
+                                            echo "<option value=\"$country\" $selected>$country</option>";
+                                        }
+                                        ?>
+                                    </select>
                                 </div>
                             </div>
                             <div class="field_wrapper">
                                 <div class="password-field">
                                     <label> Password
                                     </label><br>
-                                    <input type="password" name="pincode" value="<?php echo esc_attr($user->password); ?>"
+                                    <input type="password" name="password" value="<?php echo esc_attr($user->password); ?>"
                                         required>
                                 </div>
 
                                 <div class="cfm-password-field">
                                     <label>Confirm Password
                                     </label><br>
-                                    <input type="password" name="pincode" value="<?php echo esc_attr($user->password); ?>"
+                                    <input type="password" name="password" value="<?php echo esc_attr($user->password); ?>"
                                         required>
                                 </div>
                             </div>

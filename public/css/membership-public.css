@@ -4,7 +4,7 @@
  */
 
 /* Forntend Form */
-.membership-level-detail, 
+.membership-level-detail,
 .md-profile-options {
   width: 1200px;
   display: flex;
@@ -14,7 +14,7 @@
   margin-bottom: 100px;
 }
 
-.md-profile-options{
+.md-profile-options {
   flex-direction: row !important;
   margin-top: 150px;
   gap: 20px;
@@ -52,10 +52,17 @@ form#membership-form,
 }
 
 form#membership-form input,
-form.md-profile-form input {
+form.md-profile-form input,
+form#membership-form select,
+form.md-profile-form select {
   background: #fafafa;
   border: 1px solid #eaeaea;
   border-radius: 6px;
+}
+
+form#membership-form select,
+form.md-profile-form select {
+  min-height: 41px;
 }
 
 form#membership-form .input-box label,
@@ -134,11 +141,11 @@ form#membership-form #submitBtn,
   transition: 0.3s ease;
 }
 
-.md-profile-settings-menu button.md-cancel-btn{
+.md-profile-settings-menu button.md-cancel-btn {
   background-color: #e70000;
 }
 
-.md-profile-settings-menu button.md-cancel-btn:hover{
+.md-profile-settings-menu button.md-cancel-btn:hover {
   background-color: #a80101;
 }
 
@@ -155,7 +162,7 @@ form#membership-form #submitBtn,
 /* Account page  */
 
 .md-profile-settings {
-  background-color: #6C757D;
+  background-color: #6c757d;
   padding: 30px;
   padding-top: 50px;
   border-radius: 8px;
@@ -174,7 +181,7 @@ form#membership-form #submitBtn,
 }
 
 .md-profile-setting-listings li:hover a {
-      color: #d6d6d6;
+  color: #d6d6d6;
 }
 
 .md-profile-setting-listings hr {
@@ -193,7 +200,6 @@ form#membership-form #submitBtn,
   background-color: #f2f1f1; */
   display: block;
 }
-
 
 .md-profile-field-cont {
   display: flex;
@@ -222,4 +228,140 @@ form#membership-form #submitBtn,
 .state-field,
 .city-field {
   width: 50%;
+}
+
+.md-profile-membershipinfo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.md-payment-table {
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid #e5e5e5;
+  outline: 1px solid #ccc9c9;
+}
+/* Loader */
+#loader {
+  width: 45%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  /* z-index: 9999; */
+  display: none;
+  place-items: end;
+  margin-bottom: 6px;
+}
+
+.spinner {
+  width: 34px;
+  height: 34px;
+  border: 5px solid #ddd;
+  border-top-color: #3498db;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Moblie View */
+@media only screen and (max-width: 600px) {
+  h2.mem-title {
+    font-size: 28px;
+  }
+
+  .md-profile-options {
+    margin-top: 110px;
+  }
+
+  .membership-level-detail {
+    width: 372px;
+    padding: 20px;
+  }
+
+  .md-profile-options {
+    width: auto;
+    flex-wrap: wrap;
+    padding: 20px;
+  }
+
+  .md-profile-settings,
+  .md-profile-settings-menu {
+    width: 100%;
+    padding: 30px 25px;
+  }
+
+  .field_wrapper,
+  .md-profile-field-cont {
+    flex-direction: column;
+  }
+  .field_wrapper div,
+  .md-profile-field-cont div {
+    width: 100%;
+  }
+
+  .md-address-field-cont {
+    gap: 10px;
+    display: flex;
+    flex-direction: column;
+  }
+  .md-profile-settings-menu a.button {
+    padding: 12px 18px;
+  }
+  form#membership-form {
+    padding: 30px 25px;
+  }
+  form#membership-form .input-box.half {
+    width: 100%;
+  }
+  form#membership-form #submitBtn {
+    margin-top: 12px;
+  }
+}
+
+@media only screen and (min-width: 600px) and (max-width: 768px) {
+  .membership-level-detail,
+  .md-profile-options {
+    width: 736px;
+  }
+
+  .md-profile-settings {
+    padding: 20px;
+    padding-top: 30px;
+  }
+
+  .md-profile-setting-listings {
+    gap: 15px;
+  }
+
+  .md-address-field-cont {
+    gap: 10px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  form#membership-form,
+  .md-profile-settings-menu {
+    padding: 35px 30px;
+  }
+  .md-profile-settings-menu a.button {
+    padding: 12px 18px;
+  }
+}
+
+@media only screen and (min-width: 769px) and (max-width: 1024px) {
+  .membership-level-detail,
+  .md-profile-options {
+    width: 968px;
+  }
+  .md-profile-settings-menu a.button {
+    padding: 12px 18px;
+  }
 }

@@ -130,7 +130,7 @@ $total_members = count( get_users( $args ) );
 $active_members = $wpdb->get_var("
     SELECT COUNT(*) 
     FROM $table 
-    WHERE status = 'complete'
+    WHERE status = 'active'
 ");
 
 /*
@@ -157,9 +157,17 @@ foreach ($monthly_sales as $row) {
     $sales_series[intval($row['month'])] = intval($row['total']);
 }
 
+$readabilityCounts = [
+  'good' => $active_members,
+  'ok' => $expired_members,
+  'allMembers' => $total_members,
+  'notAnalyzed' => 0,
+];
+
+?>
 
   
-  ?>
+
 <div class="card">
     <div class="card-hd">
       <h3>Readability Overview</h3>
@@ -217,159 +225,11 @@ foreach ($monthly_sales as $row) {
 
 
 <div class="report-table-bx">
-  <form method="get" action="">
-    <div class="report-filters">
-      <div>
-        <label>Plan</label>
-        <select id="fPlan">
-          <option value="">All</option>
-          <option>Gold</option>
-          <option>Silver</option>
-          <option>Bronze</option>
-        </select>
-      </div>
-      <div>
-        <label>Status</label>
-        <select id="fStatus">
-          <option value="">All</option>
-          <option value="Active">Active</option>
-          <option value="Expired">Expired</option>
-          <option value="Paused">Paused</option>
-        </select>
-      </div>
-      <div>
-        <label>Start From</label>
-        <input type="date" id="fStart">
-      </div>
-      <div style="flex:1 1 220px">
-        <label>End To</label>
-        <input type="date" id="fEnd">
-      </div>
-      <div style="display:flex;gap:8px">
-        <button class="btn" id="applyBtn">Apply Filters</button>
-        <button class="btn secondary" id="resetBtn">Reset</button>
-      </div>
-    </div>
-  </form>
+
   
 
 <!-- Table -->
-<table class="wp-list-table widefat fixed striped table-view-list roles">
-  <thead>
-    <tr>
-      <td id="cb" class="check-column">
-        <input id="cb-select-all-1" type="checkbox">
-        <label for="cb-select-all-1">
-          <span class="screen-reader-text">Select All</span>
-        </label>
-      </td>
-      <th id="title" class="sortable asc">Username</th>
-      <th id="email" >Email</th>
-      <th id="users">Membership Plan</th>
-      <th id="access-start">Access Starts</th>
-      <th id="access-end">Access End</th>
-      <th id="account-state">Account Status</th>
-      <th id="amount">Amount</th>
-    </tr>
-  </thead>
 
-  <tbody id="the-list">
-    <tr>
-      <th scope="row" class="check-column">
-        <input type="checkbox" name="roles[client]" value="client">
-      </th>
-      <td class="title column-title has-row-actions column-primary" data-colname="Role Name">
-        <strong>Zsmith</strong>
-        <div class="row-actions">
-          <span class="edit"><a href="#">Edit</a> | </span>
-          <span class="delete"><a class="members-delete-role-link" href="#">Delete</a> | </span>
-        </div>
-      </td>
-      <td>Zsmith1212@gmail.com</td>
-      <td><a href="#">Gold</a></td>
-      <td>2025-05-05</td>
-      <td>2025-06-05</td>
-      <td>Pending</td>
-      <td>$49.99</td>
-    </tr>
-
-    <tr>
-      <th scope="row" class="check-column">
-        <input type="checkbox" name="roles[client]" value="client">
-      </th>
-      <td class="title column-title has-row-actions column-primary" data-colname="Role Name">
-        <strong>Hanery</strong>
-        <div class="row-actions">
-          <span class="edit"><a href="#">Edit</a> | </span>
-          <span class="delete"><a class="members-delete-role-link" href="#">Delete</a> | </span>
-        </div>
-      </td>
-      <td>Hanery2211@gmail.com</td>
-      <td><a href="#">Silver</a></td>
-      <td>2025-06-02</td>
-      <td>2025-07-02</td>
-      <td>Inactive</td>
-      <td>$29.99</td>
-    </tr>
-
-    <tr>
-      <th scope="row" class="check-column">
-        <input type="checkbox" name="roles[client]" value="client">
-      </th>
-      <td class="title column-title has-row-actions column-primary" data-colname="Role Name">
-        <strong>Larry</strong>
-        <div class="row-actions">
-          <span class="edit"><a href="#">Edit</a> | </span>
-          <span class="delete"><a class="members-delete-role-link" href="#">Delete</a> | </span>
-        </div>
-      </td>
-      <td>Larry1255@gmail.com</td>
-      <td><a href="#">Bronze</a></td>
-      <td>2025-07-08</td>
-      <td>2025-08-08</td>
-      <td>Pending</td>
-      <td>$45.99</td>
-    </tr>
-
-    <tr>
-      <th scope="row" class="check-column">
-        <input type="checkbox" name="roles[client]" value="client">
-      </th>
-      <td class="title column-title has-row-actions column-primary" data-colname="Role Name">
-        <strong>Rammpa</strong>
-        <div class="row-actions">
-          <span class="edit"><a href="#">Edit</a> | </span>
-          <span class="delete"><a class="members-delete-role-link" href="#">Delete</a> | </span>
-        </div>
-      </td>
-      <td>Rammpa912@gmail.com</td>
-      <td><a href="#">Gold</a></td>
-      <td>2025-05-05</td>
-      <td>2025-06-05</td>
-      <td>Active</td>
-      <td>$49.99</td>
-    </tr>       
-
-    <tr>
-      <th scope="row" class="check-column">
-        <input type="checkbox" name="roles[client]" value="client">
-      </th>
-      <td class="title column-title has-row-actions column-primary" data-colname="Role Name">
-        <strong>Laura</strong>
-        <div class="row-actions">
-          <span class="edit"><a href="#">Edit</a> | </span>
-          <span class="delete"><a class="members-delete-role-link" href="#">Delete</a> | </span>
-        </div>
-      </td>
-      <td>Laura422@gmail.com</td>
-      <td><a href="#">Silver</a></td>
-      <td>2025-05-05</td>
-      <td>2025-06-05</td>
-      <td>Pending</td>
-      <td>$89.99</td>
-    </tr>
-  </tbody>
-</table>
 </div>
 </div>
 
@@ -381,8 +241,10 @@ foreach ($monthly_sales as $row) {
 <script>
 document.addEventListener('DOMContentLoaded', function () {
   /* ---------------- READABILITY DONUT (no-crop hover) ---------------- */
+
+  
   const rState = {
-    good: 110, ok: 40, allMembers: 150, notAnalyzed: 0,
+   ...<?php echo json_encode($readabilityCounts); ?>,
     links: {
       good:  '/wp-admin/edit.php?post_status=publish&post_type=post&readability_filter=good',
       ok:    '/wp-admin/edit.php?post_status=publish&post_type=post&readability_filter=ok',
@@ -402,7 +264,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const rChart = new Chart(rCtx, {
     type: 'doughnut',
     data: {
-    labels: ['Active Members','Expired Members','Total Members'],
+    labels: ['Active Members','Expired Members','Total Members', 'Not Analyzed'],
       datasets: [{
         data: [rState.good, rState.ok, rState.allMembers, rState.notAnalyzed],
         backgroundColor: ['#68d391', '#f56565', '#f6ad55', '#cbd5e1'],
@@ -419,6 +281,7 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     }
   });
+  
 
   // Public API: update readability dynamically
   window.setReadabilityStats = function(next){
@@ -428,6 +291,9 @@ document.addEventListener('DOMContentLoaded', function () {
     rChart.update();
   };
 
+
+
+  
   /* ---------------- SALES LINE + GOAL LINE ---------------- */
   const sCtx = document.getElementById('salesChart').getContext('2d');
 
