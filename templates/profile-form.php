@@ -10,6 +10,7 @@ if (!is_user_logged_in()):
 <?php else:
 
     $user = wp_get_current_user();
+    $user_id = $user->ID;
     $member_street = get_user_meta($user->ID, 'member_street', true);
     $member_city = get_user_meta($user->ID, 'member_city', true);
     $member_state = get_user_meta($user->ID, 'member_state', true);
@@ -207,7 +208,7 @@ if (!is_user_logged_in()):
 
                     <?php if ($membership_id): ?>
                         <a href="/membership-upgrade" class="button">Upgrade Membership</a>
-                        <button type="submit" data-sid="<?php echo $subscription_id ?>" id="membership_cancel"
+                        <button type="submit" data-sid="<?php echo $subscription_id ?>"  data-user_id="<?php echo $user_id ?>"   id="membership_cancel"
                             name="md_cancel_membership" class="button md-cancel-btn">
                             Cancel Membership
                         </button>
@@ -228,13 +229,15 @@ if (!is_user_logged_in()):
                         e.preventDefault();
 
                         var sid = $(this).data('sid');
+                        var user_id = $(this).data('user_id');
 
                         $.ajax({
                             url: '<?php echo admin_url("admin-ajax.php"); ?>', // WP AJAX endpoint
                             type: 'POST',
                             data: {
                                 action: 'membership_cancel_demand', // required
-                                sus_id: sid
+                                sus_id: sid,
+                                user_id: user_id
                             },
                             success: function (response) {
                                 console.log('Server response:', response);

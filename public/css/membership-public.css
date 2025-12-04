@@ -39,7 +39,8 @@ h2.mem-title {
 }
 
 form#membership-form,
-.md-profile-settings-menu {
+.md-profile-settings-menu,
+#login-form {
   background: white;
   padding: 40px 40px;
   border: 1px solid #eaeaea;
@@ -51,10 +52,20 @@ form#membership-form,
   align-items: flex-end;
 }
 
+#login-form{
+  width: 500px;
+  justify-self: center;
+}
+
+#login-form p{
+  width: 100%;
+}
+
 form#membership-form input,
 form.md-profile-form input,
 form#membership-form select,
-form.md-profile-form select {
+form.md-profile-form select,
+#login-form input {
   background: #fafafa;
   border: 1px solid #eaeaea;
   border-radius: 6px;
@@ -65,8 +76,15 @@ form.md-profile-form select {
   min-height: 41px;
 }
 
+.md-address-field-cont{
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
 form#membership-form .input-box label,
-form.md-profile-form label {
+form.md-profile-form label,
+#login-form label {
   font-family: var(--e-global-typography-primary-font-family), Sans-serif !important;
   font-weight: 400;
   line-height: 1.8em;
@@ -134,11 +152,16 @@ form#membership-form fieldset label {
 
 form#membership-form #submitBtn,
 .md-profile-settings-menu button,
-.md-profile-settings-menu .button {
+.md-profile-settings-menu .button,
+#login-form button {
   padding: 12px 28px;
   border-radius: 6px;
   border: 2px solid white;
   transition: 0.3s ease;
+}
+
+#login-form button {
+  margin-right: 15px;
 }
 
 .md-profile-settings-menu button.md-cancel-btn {
@@ -281,8 +304,9 @@ form#membership-form #submitBtn,
     margin-top: 110px;
   }
 
-  .membership-level-detail {
-    width: 372px;
+  .membership-level-detail,
+  #login-form{
+    width: 95%;
     padding: 20px;
   }
 
