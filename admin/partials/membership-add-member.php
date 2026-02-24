@@ -32,73 +32,205 @@ if (isset($_POST['createmember'])) {
   $password = sanitize_text_field($_POST['password']);
   $first_name = sanitize_text_field($_POST['first_name']);
   $last_name = sanitize_text_field($_POST['last_name']);
-  $gender = sanitize_text_field($_POST['gender']);
-  $phone = sanitize_text_field($_POST['phone']);
-  $street = sanitize_text_field($_POST['street']);
-  $city = sanitize_text_field($_POST['city']);
-  $state = sanitize_text_field($_POST['state']);
-  $zipcode = sanitize_text_field($_POST['zipcode']);
-  $country = sanitize_text_field($_POST['country']);
-  $company = sanitize_text_field($_POST['company']);
-  $notes = sanitize_textarea_field($_POST['admin_notes']);
+  $gender = sanitize_text_field($_POST['member_gender']);
+  $phone = sanitize_text_field($_POST['member_phone']);
+  $street = sanitize_text_field($_POST['member_street']);
+  $city = sanitize_text_field($_POST['member_city']);
+  $state = sanitize_text_field($_POST['member_state']);
+  $pincode = sanitize_text_field($_POST['member_pincode']);
+  $country = sanitize_text_field($_POST['member_country']);
   $status = sanitize_text_field($_POST['account_status']);
   $level = sanitize_text_field($_POST['membership_level']);
   $access = sanitize_text_field($_POST['access_starts']);
   $member_since = sanitize_text_field($_POST['member_since']);
 
-  // 1. Create WordPress User
-  $user_id = wp_insert_user([
-    'user_login' => $username,
-    'user_email' => $email,
-    'user_pass' => $password,
-    'first_name' => $first_name,
-    'last_name' => $last_name,
-    'role' => 'subscriber',
-  ]);
 
-  if (is_wp_error($user_id)) {
-    wp_die('Error creating user: ' . $user_id->get_error_message());
-  }
 
-  // 2. Save custom profile fields in usermeta
-  update_user_meta($user_id, 'gender', $gender);
-  update_user_meta($user_id, 'phone', $phone);
-  update_user_meta($user_id, 'street', $street);
-  update_user_meta($user_id, 'city', $city);
-  update_user_meta($user_id, 'state', $state);
-  update_user_meta($user_id, 'zipcode', $zipcode);
-  update_user_meta($user_id, 'country', $country);
-  update_user_meta($user_id, 'company', $company);
-  update_user_meta($user_id, 'admin_notes', $notes);
-  update_user_meta($user_id, 'account_status', $status);
-  update_user_meta($user_id, 'membership_level', $level);
-  update_user_meta($user_id, 'access_starts', $access);
-  update_user_meta($user_id, 'member_since', $member_since);
+  $user_email = $email;
+  $existing_user_id = email_exists($user_email);
 
-  // 3. (Optional) If your membership plugin has its own table, insert there too
-  global $wpdb;
-  $table = $wpdb->prefix . 'md_member'; // check your plugin tables
-  if ($wpdb->get_var("SHOW TABLES LIKE '$table'") == $table) {
-    $wpdb->insert($table, [
-      'user_id' => $user_id,
-      'membership_level' => $level,
-      'status' => $status,
-      'access_start' => $access,
-      'member_since' => $member_since,
+  //1. Check if User already exists- Update member data
+  if ($existing_user_id) {
+
+    $user_id = wp_update_user([
+      'ID'         => $existing_user_id,
+      'user_pass'  => $password,
+      'first_name' => $first_name,
+      'last_name'  => $last_name,
     ]);
-  }
-  echo '<div class="updated notice"><p>Member  added successfully!</p></div>';
 
+    //  if (is_wp_error($user_id)) {
+    //   wp_die('Error creating user: ' . $user_id->get_error_message());
+    // }
+
+    // 2. Save custom profile fields in usermeta
+    update_user_meta($user_id, 'member_gender', $gender);
+    update_user_meta($user_id, 'member_phone', $phone);
+    update_user_meta($user_id, 'member_street', $street);
+    update_user_meta($user_id, 'member_city', $city);
+    update_user_meta($user_id, 'member_state', $state);
+    update_user_meta($user_id, 'member_pincode', $pincode);
+    update_user_meta($user_id, 'member_country', $country);
+    update_user_meta($user_id, 'account_status', $status);
+    update_user_meta($user_id, 'membership_level', $level);
+    update_user_meta($user_id, 'access_starts', $access);
+    update_user_meta($user_id, 'member_since', $member_since);
+
+
+    global $wpdb;
+
+    // 3. Update Member data in "Md Member" table
+    $table_member = $wpdb->prefix . 'md_member';
+
+    if ($wpdb->get_var("SHOW TABLES LIKE '$table_member'") === $table_member) {
+        $wpdb->update($table_member, [
+            'user_id'          => $user_id,
+            'membership_level' => get_the_title($level),
+            'status'           => $status,
+            'access_start'     => $access,
+            'member_since'     => $member_since,
+            'gender'           => $gender,
+            'phone'            => $phone,
+            'street'           => $street,
+            'city'             => $city,
+            'state'            => $state,
+            'zipcode'          => $pincode,
+            'country'          => $country,
+        ],
+        [
+           'user_id' => $user_id 
+        ]
+      );
+    }
+
+    // 4. Update Member data in "Md Subscription" table.
+    $table_subscription = $wpdb->prefix . 'md_subscriptions';
+
+    $period_type = get_post_meta($level, '_membership_type', true);
+    if (!$period_type) {
+          $period_type = 'one_time';
+      }
+
+    $price = get_post_meta($level, 'membership_price', true);
+
+    if ($wpdb->get_var("SHOW TABLES LIKE '$table_subscription'") === $table_subscription) {
+        $wpdb->update($table_subscription, [
+            'membership_id' => $level,
+            'gateway'       => 'offline',
+            'period_type'   => $period_type,
+            'price'         => $price,
+            'total'         => $price,
+            'status'        => 'Completed'
+        ],
+        [
+           'user_id' => $user_id 
+        ]
+      );
+    }
+
+  echo '<div class="updated notice"><p>Member Updated successfully!</p></div>';
+
+
+  }else{
+
+    // 1. Create WordPress User
+    $user_id = wp_insert_user([
+      'user_login' => $username,
+      'user_email' => $email,
+      'user_pass' => $password,
+      'first_name' => $first_name,
+      'last_name' => $last_name,
+      'role' => 'subscriber',
+    ]);
+
+    if (is_wp_error($user_id)) {
+      wp_die('Error creating user: ' . $user_id->get_error_message());
+    }
+
+    // 2. Save custom profile fields in usermeta
+    update_user_meta($user_id, 'member_gender', $gender);
+    update_user_meta($user_id, 'member_phone', $phone);
+    update_user_meta($user_id, 'member_street', $street);
+    update_user_meta($user_id, 'member_city', $city);
+    update_user_meta($user_id, 'member_state', $state);
+    update_user_meta($user_id, 'member_pincode', $pincode);
+    update_user_meta($user_id, 'member_country', $country);
+    update_user_meta($user_id, 'account_status', $status);
+    update_user_meta($user_id, 'membership_level', $level);
+    update_user_meta($user_id, 'access_starts', $access);
+    update_user_meta($user_id, 'member_since', $member_since);
+
+   
+    global $wpdb;
+ 
+    //3. Insert Member data into "md_member" table
+    $table_member = $wpdb->prefix . 'md_member';
+
+    if ($wpdb->get_var("SHOW TABLES LIKE '$table_member'") === $table_member) {
+        $wpdb->insert($table_member, [
+            'user_id'          => $user_id,
+            'membership_level' => get_the_title($level),
+            'status'           => $status,
+            'access_start'     => $access,
+            'member_since'     => $member_since,
+            'gender'           => $gender,
+            'phone'            => $phone,
+            'street'           => $street,
+            'city'             => $city,
+            'state'            => $state,
+            'zipcode'          => $pincode,
+            'country'          => $country,
+        ]);
+    }
+
+    // Insert Member data into "md_subscriptions" table
+    $table_subscription = $wpdb->prefix . 'md_subscriptions';
+
+    $period_type = get_post_meta($level, '_membership_type', true);
+    if (!$period_type) {
+          $period_type = 'one_time';
+      }
+
+    $price = get_post_meta($level, 'membership_price', true);
+
+    if ($wpdb->get_var("SHOW TABLES LIKE '$table_subscription'") === $table_subscription) {
+        $wpdb->insert($table_subscription, [
+            'user_id'       => $user_id,
+            'membership_id' => $level,
+            'gateway'       => 'offline',
+            'period_type'   => $period_type,
+            'price'         => $price,
+            'total'         => $price,
+            'status'        => 'Completed'
+        ]);
+    }
+
+    echo '<div class="updated notice"><p>Member added successfully!</p></div>';
+
+  }
 
 }
+
+ 
+
+ // Get membership level posts
+  $members =  get_posts([
+    'post_type'      => 'my_membership_level',
+    'posts_per_page' => -1,
+    'orderby'        => 'title',
+    'order'          => 'ASC'
+]);
+
+
 ?>
-<h3>Add Member</h3>
-<form method="post" action="<?php echo admin_url('admin.php'); ?>?page=my_wp_membership">
+
+
+<form method="post" action="">
   <input type="hidden" name="action" value="add_member">
   <?php wp_nonce_field('create_md_admin_end', '_wpnonce_create_md_admin_end') ?>
-
-  <div class="form-wrapper">
-
+  
+  <div class="form-wrapper add_member_form">
+    <h3 class="title">Add New Member</h3>
 
     <div class="field-wrapper">
       <label for="username">Username</label>
@@ -107,17 +239,23 @@ if (isset($_POST['createmember'])) {
 
     <div class="field-wrapper">
       <label for="email">Email</label>
-      <input type="email" name="email" required>
+      <input type="email" name="email" class="email" required>
+    </div>
+
+    <div class="field-wrapper">
+      <label for="member_phone">Phone</label>
+      <input type="text" name="member_phone">
     </div>
 
     <div class="field-wrapper">
       <label for="password"> Password</label>
-      <input type="password" name="password" required>
+      <input type="password" name="password" class="password" required>
     </div>
 
-    <div class="field-wrapper">
+    <div class="field-wrapper" style="position: relative;">
       <label for="password2">Retype Password</label>
-      <input type="password" name="password2" required>
+      <input type="password" name="password2" class="confirm_password" required>
+      <span class="toggle-password" onclick="toggleBothPasswords(this)"><img width="15px" src="/wp-content/plugins/Membership/public/assests/icon/eye.svg" alt="show"></span>
     </div>
 
     <div class="field-wrapper">
@@ -130,12 +268,37 @@ if (isset($_POST['createmember'])) {
 
     <div class="field-wrapper">
       <label for="membership_level">Membership Level</label>
-      <input type="text" name="membership_level">
+      <select name="membership_level" id="membership_level">
+        <option value="">Select Membership Level</option>
+        <?php foreach($members as $member): ?>
+           <?php 
+            $post_id = $member->ID;
+
+            // Get the membership type from post meta
+            $membership_type = get_post_meta($post_id, '_membership_type', true);
+
+            // Fallback if meta not set
+            if (!$membership_type) {
+                $membership_type = 'one_time';
+            }
+        ?>
+
+        <option value="<?php echo esc_attr($post_id); ?>">
+            <?php echo esc_html($member->post_title); ?>
+            - <?php echo esc_html($membership_type); ?>
+        </option>
+        <?php endforeach; ?>
+      </select>
     </div>
 
     <div class="field-wrapper">
       <label for="access_starts">Access Starts</label>
       <input type="date" name="access_starts">
+    </div>
+
+    <div class="field-wrapper">
+      <label for="member_since">Member Since</label>
+      <input type="date" name="member_since">
     </div>
 
     <div class="field-wrapper">
@@ -149,8 +312,8 @@ if (isset($_POST['createmember'])) {
     </div>
 
     <div class="field-wrapper">
-      <label for="gender">Gender</label>
-      <select name="gender">
+      <label for="member_gender">Gender</label>
+      <select name="member_gender">
         <option value="Male">Male</option>
         <option value="Female">Female</option>
         <option value="Others">Others</option>
@@ -158,254 +321,112 @@ if (isset($_POST['createmember'])) {
     </div>
 
     <div class="field-wrapper">
-      <label for="phone">Phone</label>
-      <input type="text" name="phone">
+      <label for="member_street">Street</label>
+      <input type="text" name="member_street">
     </div>
 
     <div class="field-wrapper">
-      <label for="street">Street</label>
-      <input type="text" name="street">
+      <label for="member_city">City</label>
+      <input type="text" name="member_city">
     </div>
 
     <div class="field-wrapper">
-      <label for="city">City</label>
-      <input type="text" name="city"><br>
+      <label for="member_state"> State</label>
+      <input type="text" name="member_state">
     </div>
 
     <div class="field-wrapper">
-      <label for="state"> State</label>
-      <input type="text" name="state">
+      <label for="member_pincode"> Pincode</label>
+      <input type="text" name="member_pincode">
     </div>
 
     <div class="field-wrapper">
-      <label for="zipcode"> Zipcode</label>
-      <input type="text" name="zipcode">
-    </div>
-    <div class="field-wrapper">
-      <label for="country">Country</label>
-      <select class="regular-text"  name="country">
-        <option value="" selected="">(Please Select)</option>
-        <option value="Afghanistan">Afghanistan</option>
-        <option value="Albania">Albania</option>
-        <option value="Algeria">Algeria</option>
-        <option value="Andorra">Andorra</option>
-        <option value="Angola">Angola</option>
-        <option value="Antigua and Barbuda">Antigua and Barbuda</option>
-        <option value="Argentina">Argentina</option>
-        <option value="Armenia">Armenia</option>
-        <option value="Aruba">Aruba</option>
-        <option value="Australia">Australia</option>
-        <option value="Austria">Austria</option>
-        <option value="Azerbaijan">Azerbaijan</option>
-        <option value="Bahamas">Bahamas</option>
-        <option value="Bahrain">Bahrain</option>
-        <option value="Bangladesh">Bangladesh</option>
-        <option value="Barbados">Barbados</option>
-        <option value="Belarus">Belarus</option>
-        <option value="Belgium">Belgium</option>
-        <option value="Belize">Belize</option>
-        <option value="Benin">Benin</option>
-        <option value="Bhutan">Bhutan</option>
-        <option value="Bolivia">Bolivia</option>
-        <option value="Bonaire">Bonaire</option>
-        <option value="Bosnia and Herzegovina">Bosnia and Herzegovina</option>
-        <option value="Botswana">Botswana</option>
-        <option value="Brazil">Brazil</option>
-        <option value="Brunei">Brunei</option>
-        <option value="Bulgaria">Bulgaria</option>
-        <option value="Burkina Faso">Burkina Faso</option>
-        <option value="Burundi">Burundi</option>
-        <option value="Cambodia">Cambodia</option>
-        <option value="Cameroon">Cameroon</option>
-        <option value="Canada">Canada</option>
-        <option value="Cape Verde">Cape Verde</option>
-        <option value="Cayman Islands">Cayman Islands</option>
-        <option value="Central African Republic">Central African Republic</option>
-        <option value="Chad">Chad</option>
-        <option value="Chile">Chile</option>
-        <option value="China">China</option>
-        <option value="Colombia">Colombia</option>
-        <option value="Comoros">Comoros</option>
-        <option value="Congo (Brazzaville)">Congo (Brazzaville)</option>
-        <option value="Congo">Congo</option>
-        <option value="Costa Rica">Costa Rica</option>
-        <option value="Cote d'Ivoire">Cote d'Ivoire</option>
-        <option value="Croatia">Croatia</option>
-        <option value="Cuba">Cuba</option>
-        <option value="Curacao">Curacao</option>
-        <option value="Cyprus">Cyprus</option>
-        <option value="Czech Republic">Czech Republic</option>
-        <option value="Denmark">Denmark</option>
-        <option value="Djibouti">Djibouti</option>
-        <option value="Dominica">Dominica</option>
-        <option value="Dominican Republic">Dominican Republic</option>
-        <option value="East Timor (Timor Timur)">East Timor (Timor Timur)</option>
-        <option value="Ecuador">Ecuador</option>
-        <option value="Egypt">Egypt</option>
-        <option value="El Salvador">El Salvador</option>
-        <option value="Equatorial Guinea">Equatorial Guinea</option>
-        <option value="Eritrea">Eritrea</option>
-        <option value="Estonia">Estonia</option>
-        <option value="Eswatini">Eswatini</option>
-        <option value="Ethiopia">Ethiopia</option>
-        <option value="Fiji">Fiji</option>
-        <option value="Finland">Finland</option>
-        <option value="France">France</option>
-        <option value="French Polynesia">French Polynesia</option>
-        <option value="Gabon">Gabon</option>
-        <option value="Gambia, The">Gambia, The</option>
-        <option value="Georgia">Georgia</option>
-        <option value="Germany">Germany</option>
-        <option value="Ghana">Ghana</option>
-        <option value="Greece">Greece</option>
-        <option value="Grenada">Grenada</option>
-        <option value="Guatemala">Guatemala</option>
-        <option value="Guinea">Guinea</option>
-        <option value="Guinea-Bissau">Guinea-Bissau</option>
-        <option value="Guyana">Guyana</option>
-        <option value="Haiti">Haiti</option>
-        <option value="Honduras">Honduras</option>
-        <option value="Hong Kong">Hong Kong</option>
-        <option value="Hungary">Hungary</option>
-        <option value="Iceland">Iceland</option>
-        <option value="India">India</option>
-        <option value="Indonesia">Indonesia</option>
-        <option value="Iran">Iran</option>
-        <option value="Iraq">Iraq</option>
-        <option value="Ireland">Ireland</option>
-        <option value="Israel">Israel</option>
-        <option value="Italy">Italy</option>
-        <option value="Jamaica">Jamaica</option>
-        <option value="Japan">Japan</option>
-        <option value="Jordan">Jordan</option>
-        <option value="Kazakhstan">Kazakhstan</option>
-        <option value="Kenya">Kenya</option>
-        <option value="Kiribati">Kiribati</option>
-        <option value="Korea, North">Korea, North</option>
-        <option value="Korea, South">Korea, South</option>
-        <option value="Kuwait">Kuwait</option>
-        <option value="Kyrgyzstan">Kyrgyzstan</option>
-        <option value="Laos">Laos</option>
-        <option value="Latvia">Latvia</option>
-        <option value="Lebanon">Lebanon</option>
-        <option value="Lesotho">Lesotho</option>
-        <option value="Liberia">Liberia</option>
-        <option value="Libya">Libya</option>
-        <option value="Liechtenstein">Liechtenstein</option>
-        <option value="Lithuania">Lithuania</option>
-        <option value="Luxembourg">Luxembourg</option>
-        <option value="Macedonia">Macedonia</option>
-        <option value="Madagascar">Madagascar</option>
-        <option value="Malawi">Malawi</option>
-        <option value="Malaysia">Malaysia</option>
-        <option value="Maldives">Maldives</option>
-        <option value="Mali">Mali</option>
-        <option value="Malta">Malta</option>
-        <option value="Marshall Islands">Marshall Islands</option>
-        <option value="Mauritania">Mauritania</option>
-        <option value="Mauritius">Mauritius</option>
-        <option value="Mexico">Mexico</option>
-        <option value="Micronesia">Micronesia</option>
-        <option value="Moldova">Moldova</option>
-        <option value="Monaco">Monaco</option>
-        <option value="Mongolia">Mongolia</option>
-        <option value="Montenegro">Montenegro</option>
-        <option value="Morocco">Morocco</option>
-        <option value="Mozambique">Mozambique</option>
-        <option value="Myanmar">Myanmar</option>
-        <option value="Namibia">Namibia</option>
-        <option value="Nauru">Nauru</option>
-        <option value="Nepa">Nepa</option>
-        <option value="Netherlands">Netherlands</option>
-        <option value="New Zealand">New Zealand</option>
-        <option value="Nicaragua">Nicaragua</option>
-        <option value="Niger">Niger</option>
-        <option value="Nigeria">Nigeria</option>
-        <option value="Norway">Norway</option>
-        <option value="Oman">Oman</option>
-        <option value="Pakistan">Pakistan</option>
-        <option value="Palau">Palau</option>
-        <option value="Palestine">Palestine</option>
-        <option value="Panama">Panama</option>
-        <option value="Papua New Guinea">Papua New Guinea</option>
-        <option value="Paraguay">Paraguay</option>
-        <option value="Peru">Peru</option>
-        <option value="Philippines">Philippines</option>
-        <option value="Poland">Poland</option>
-        <option value="Portugal">Portugal</option>
-        <option value="Qatar">Qatar</option>
-        <option value="Romania">Romania</option>
-        <option value="Russia">Russia</option>
-        <option value="Rwanda">Rwanda</option>
-        <option value="Saint Kitts and Nevis">Saint Kitts and Nevis</option>
-        <option value="Saint Lucia">Saint Lucia</option>
-        <option value="Saint Vincent">Saint Vincent</option>
-        <option value="Samoa">Samoa</option>
-        <option value="San Marino">San Marino</option>
-        <option value="Sao Tome and Principe">Sao Tome and Principe</option>
-        <option value="Saudi Arabia">Saudi Arabia</option>
-        <option value="Senegal">Senegal</option>
-        <option value="Serbia">Serbia</option>
-        <option value="Seychelles">Seychelles</option>
-        <option value="Sierra Leone">Sierra Leone</option>
-        <option value="Singapore">Singapore</option>
-        <option value="Slovakia">Slovakia</option>
-        <option value="Slovenia">Slovenia</option>
-        <option value="Solomon Islands">Solomon Islands</option>
-        <option value="Somalia">Somalia</option>
-        <option value="South Africa">South Africa</option>
-        <option value="Spain">Spain</option>
-        <option value="Sri Lanka">Sri Lanka</option>
-        <option value="Sudan">Sudan</option>
-        <option value="Suriname">Suriname</option>
-        <option value="Swaziland">Swaziland</option>
-        <option value="Sweden">Sweden</option>
-        <option value="Switzerland">Switzerland</option>
-        <option value="Syria">Syria</option>
-        <option value="Taiwan">Taiwan</option>
-        <option value="Tajikistan">Tajikistan</option>
-        <option value="Tanzania">Tanzania</option>
-        <option value="Thailand">Thailand</option>
-        <option value="Togo">Togo</option>
-        <option value="Tonga">Tonga</option>
-        <option value="Trinidad and Tobago">Trinidad and Tobago</option>
-        <option value="Tunisia">Tunisia</option>
-        <option value="Turkey">Turkey</option>
-        <option value="Turkmenistan">Turkmenistan</option>
-        <option value="Tuvalu">Tuvalu</option>
-        <option value="Uganda">Uganda</option>
-        <option value="Ukraine">Ukraine</option>
-        <option value="United Arab Emirates">United Arab Emirates</option>
-        <option value="United Kingdom">United Kingdom</option>
-        <option value="United States of America">United States of America</option>
-        <option value="Uruguay">Uruguay</option>
-        <option value="Uzbekistan">Uzbekistan</option>
-        <option value="Vanuatu">Vanuatu</option>
-        <option value="Vatican City">Vatican City</option>
-        <option value="Venezuela">Venezuela</option>
-        <option value="Vietnam">Vietnam</option>
-        <option value="Yemen">Yemen</option>
-        <option value="Zambia">Zambia</option>
-        <option value="Zimbabwe">Zimbabwe</option>
+      <label for="member_country">country</label>
+      <select class="regular-text"  name="member_country">
+        <?php
+							$countries = [
+								"Afghanistan","Albania","Algeria","Andorra","Angola","Antigua and Barbuda","Argentina","Armenia",
+								"Australia","Austria","Azerbaijan","Bahamas","Bahrain","Bangladesh","Barbados","Belarus",
+								"Belgium","Belize","Benin","Bhutan","Bolivia","Bosnia and Herzegovina","Botswana","Brazil",
+								"Brunei","Bulgaria","Burkina Faso","Burundi","Cambodia","Cameroon","Canada","Cape Verde",
+								"Central African Republic","Chad","Chile","China","Colombia","Comoros",
+								"Congo, Democratic Republic of the","Congo, Republic of the","Costa Rica","Croatia","Cuba",
+								"Cyprus","Czech Republic","Denmark","Djibouti","Dominica","Dominican Republic","East Timor",
+								"Ecuador","Egypt","El Salvador","Equatorial Guinea","Eritrea","Estonia","Eswatini","Ethiopia",
+								"Fiji","Finland","France","Gabon","Gambia","Georgia","Germany","Ghana","Greece","Grenada",
+								"Guatemala","Guinea","Guinea-Bissau","Guyana","Haiti","Honduras","Hungary","Iceland","India",
+								"Indonesia","Iran","Iraq","Ireland","Israel","Italy","Ivory Coast","Jamaica","Japan","Jordan",
+								"Kazakhstan","Kenya","Kiribati","Korea, North","Korea, South","Kosovo","Kuwait","Kyrgyzstan",
+								"Laos","Latvia","Lebanon","Lesotho","Liberia","Libya","Liechtenstein","Lithuania","Luxembourg",
+								"Madagascar","Malawi","Malaysia","Maldives","Mali","Malta","Marshall Islands","Mauritania",
+								"Mauritius","Mexico","Micronesia","Moldova","Monaco","Mongolia","Montenegro","Morocco",
+								"Mozambique","Myanmar","Namibia","Nauru","Nepal","Netherlands","New Zealand","Nicaragua",
+								"Niger","Nigeria","North Macedonia","Norway","Oman","Pakistan","Palau","Panama","Papua New Guinea",
+								"Paraguay","Peru","Philippines","Poland","Portugal","Qatar","Romania","Russia","Rwanda",
+								"Saint Kitts and Nevis","Saint Lucia","Saint Vincent and the Grenadines","Samoa","San Marino",
+								"Sao Tome and Principe","Saudi Arabia","Senegal","Serbia","Seychelles","Sierra Leone",
+								"Singapore","Slovakia","Slovenia","Solomon Islands","Somalia","South Africa","Spain","Sri Lanka",
+								"Sudan","South Sudan","Suriname","Sweden","Switzerland","Syria","Taiwan","Tajikistan","Tanzania",
+								"Thailand","Togo","Tonga","Trinidad and Tobago","Tunisia","Turkey","Turkmenistan","Tuvalu",
+								"Uganda","Ukraine","United Arab Emirates","United Kingdom","United States","Uruguay","Uzbekistan",
+								"Vanuatu","Vatican City","Venezuela","Vietnam","Yemen","Zambia","Zimbabwe"
+							];
+
+							foreach ($countries as $country) {
+								$selected = ($member_country === $country) ? 'selected' : '';
+								echo "<option value=\"$country\" $selected>$country</option>";
+							}
+							?> 
       </select>
-    </div>
-    <div class="field-wrapper">
-      <label for="company"> Company</label>
-      <input type="text" name="company">
-    </div>
-    <div class="field-wrapper">
-      <label for="member_since">Member Since</label>
-      <input type="date" name="member_since">
-    </div>
-    <div class="field-wrapper">
-      <label for="admin_notes">Admin Notes </label>
-      <textarea rows="4" name="admin_notes"></textarea>
     </div>
 
     <div class="form-btn">
-      <button class="button button-primary" type="submit" name="createmember">Add New Member</button>
+      <button class="button button-primary membership" type="submit" name="createmember">Add New Member</button>
     </div>
 
   </div>
 
 </form>
+
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const form = document.querySelector('form');
+
+    form.addEventListener('submit', function (e) {
+        const password = document.querySelector('.password').value;
+        const confirmPassword = document.querySelector('.confirm_password').value;
+        const email = document.querySelector('.email').value;
+
+        if (password !== confirmPassword) {
+            e.preventDefault();
+            alert("Password & Confirm Password do not match!");
+            return;
+        }
+    });
+});
+
+// GLOBAL FUNCTION — REQUIRED FOR onclick=""
+function toggleBothPasswords(icon) {
+    var pass1 = document.querySelector('.password');
+    var pass2 = document.querySelector('.confirm_password');
+
+    if (pass1.type === "password") {
+        // SHOW BOTH
+        pass1.type = "text";
+        pass2.type = "text";
+
+        // show HIDE icon
+        icon.innerHTML = `<img width="15px" src="/wp-content/plugins/Membership/public/assests/icon/eye-crossed.svg" alt="hide">`;
+    } else {
+        // HIDE BOTH
+        pass1.type = "password";
+        pass2.type = "password";
+
+        // show SHOW icon
+        icon.innerHTML = `<img width="15px" src="/wp-content/plugins/Membership/public/assests/icon/eye.svg" alt="show">`;
+    }
+}
+</script>

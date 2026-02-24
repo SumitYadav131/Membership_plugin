@@ -138,6 +138,57 @@
   gap: 15px;
   margin-bottom: 20px;
 }
+
+.add_member_form {
+  flex-direction: row !important;
+  flex-wrap: wrap;
+  width: 93%;
+  padding: 46px 36px;
+  background: #fefefe;
+  margin-top: 30px;
+}
+
+.add_member_form .field-wrapper {
+  flex-direction: column !important;
+  width: 31%;
+}
+
+.add_member_form .field-wrapper label{
+    margin-bottom: 5px;
+}
+
+.add_member_form .field-wrapper input,
+.add_member_form .field-wrapper select {
+  min-height: 36px;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.add_member_form .title {
+  width: 100%;
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.add_member_form .form-btn {
+  width: 100%;
+}
+
+.add_member_form .form-btn button{
+  padding: 5px 18px;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+/* Password show hide */
+.toggle-password {
+  position: absolute;
+  right: 12px;
+  bottom: 10px;
+}
+
 @media (min-width: 980px) {
   .dash-wrap {
     grid-template-columns: 1fr 1fr;

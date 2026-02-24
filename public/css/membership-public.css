@@ -294,6 +294,18 @@ form#membership-form #submitBtn,
   }
 }
 
+
+/* Password show hide */
+.password .toggle-password {
+    position: absolute;
+    right: 12px;
+    bottom: 10px;
+}
+
+
+
+
+
 /* Moblie View */
 @media only screen and (max-width: 600px) {
   h2.mem-title {

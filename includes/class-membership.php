@@ -420,7 +420,7 @@ class Membership {
 			'supports'           => array('title', 'editor', 'custom-fields'),
 			'capability_type'    => 'post',
 			'hierarchical'       => false,
-			'has_archive'        => false,
+			'has_archive'        => true,
 			'rewrite' => array(
 				'slug' => 'membership-level',
 				'with_front' => false
@@ -461,6 +461,8 @@ class Membership {
 
 		$membership_type = get_post_meta($post->ID, '_membership_type', true);
 		$stripe_price_id = get_post_meta($post->ID, '_stripe_price_id', true);
+		$membership_price = get_post_meta($post->ID, 'membership_price', true);
+		
 		?>
 
 		<style>
@@ -479,6 +481,11 @@ class Membership {
 			<label><strong>Stripe Price ID (for subscription):</strong></label><br>
 			<input type="text" name="stripe_price_id" value="<?php echo esc_attr($stripe_price_id); ?>" style="width:100%;">
 			<p style="color:#555;">Enter Stripe Price ID (e.g., <code>price_123xyz</code>)</p>
+		</div>
+		<div class="membership-meta-field">
+			<label><strong>Membership Price:</strong></label><br>
+			<input type="text" name="membership_price" value="<?php echo esc_attr($membership_price); ?>" style="width:100%;">
+	
 		</div>
 
     <?php
@@ -507,6 +514,12 @@ class Membership {
 		if (isset($_POST['stripe_price_id'])) {
 			update_post_meta($post_id, '_stripe_price_id', sanitize_text_field($_POST['stripe_price_id']));
 		}
+		// Save Stripe Price ID
+		if (isset($_POST['membership_price'])) {
+			update_post_meta($post_id, 'membership_price', sanitize_text_field($_POST['membership_price']));
+		}
+		
+		
 	}
 	
 	function my_membership_restrict_content_by_levels($content) {

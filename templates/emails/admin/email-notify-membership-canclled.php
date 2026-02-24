@@ -47,12 +47,8 @@
             </p>
         </div>
         
-        <!-- Footer - Plugin Name and Links updated -->
-        <div style="background-color: #333333; padding: 16px; text-align: center; font-size: 11px; color: #cccccc; border-top: 1px solid #444444; display: flex;  justify-content: space-between !important;">
-            <p style="margin: 0;">&copy; 2025 <?php get_bloginfo('name'); ?>. All rights reserved.</p>
-            <p style="margin-top: 0; margin-bottom: 0;">
-                <a href="<?php echo get_site_url(); ?>/support" style="color: #aaaaaa; text-decoration: underline;">Support Center</a> | 
-                <a href="<?php echo get_site_url(); ?>/privacy-policy" style="color: #aaaaaa; text-decoration: underline;">Privacy Policy</a>
-            </p>
+       <!-- Footer -->
+        <div style="background-color: #333333; padding: 16px; text-align: center; font-size: 11px; color: #cccccc; border-top: 1px solid #444444;">
+            <p style="margin: 0;">&copy; <?php echo date('Y'); ?> <?php echo esc_html($site_title); ?>. All rights reserved.</p>
         </div>
     </div>

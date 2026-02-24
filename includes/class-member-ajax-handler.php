@@ -261,7 +261,20 @@ class MemberajaxHandler
 
         );
 
+        // Get Site Logo URL
+        $custom_logo_id = get_theme_mod('custom_logo');
 
+        $logo_url = wp_get_attachment_image_url($custom_logo_id, 'full');
+
+        // Get Site Name
+        if ( ! function_exists('get_bloginfo') ) {
+            require_once ABSPATH . 'wp-load.php';
+        }
+
+        $site_title = get_option('blogname');
+
+
+        // Get Registration Date
         $table = $wpdb->prefix . 'md_subscriptions';
 
         $registration_date = $wpdb->get_var(
@@ -377,7 +390,7 @@ class MemberajaxHandler
 
     public function cancel_membership_callback()
     {
-        
+
         global $wpdb;
 
         if (!isset($_POST['sus_id']) || empty($_POST['sus_id'])) {
@@ -391,7 +404,7 @@ class MemberajaxHandler
 
         $subscription_id = sanitize_text_field('sub_1SXGW9SBo56wci5DlhNm41yV');
 
-        $user_id = intval($_POST['user_id']);                     
+        $user_id = intval($_POST['user_id']);
 
 
         if ($user_id !== get_current_user_id()) {
@@ -415,10 +428,19 @@ class MemberajaxHandler
             )
         );
 
+
+        // Get Site Logo URL
         $custom_logo_id = get_theme_mod('custom_logo');
 
-        // Get the full URL of the logo image
         $logo_url = wp_get_attachment_image_url($custom_logo_id, 'full');
+
+        // Get Site Name
+        if (! function_exists('get_bloginfo')) {
+            require_once ABSPATH . 'wp-load.php';
+        }
+
+        $site_title = get_option('blogname');
+
 
 
         // Load Stripe SDK and set API key
@@ -481,11 +503,7 @@ class MemberajaxHandler
             'success' => true,
             'message' => 'Your membership has been successfully cancelled.'
         ]);
-
     }
-
-
-
 }
 
 

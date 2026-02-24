@@ -1,8 +1,37 @@
 <?php
 get_header();
 
+if( is_user_logged_in()){
+
+		$user = wp_get_current_user();
+	
+		$name = $user->display_name;
+	
+		$email = $user->user_email;
+
+		$street = get_user_meta($user->ID, 'member_street', true);
+
+		$city = get_user_meta($user->ID, 'member_city', true);
+
+		$state = get_user_meta($user->ID, 'member_state', true);
+
+		$pincode = get_user_meta($user->ID, 'member_pincode', true);
+		
+		$member_country = get_user_meta($user->ID, 'member_country', true);
+
+	}else{
+
+		$name = '';
+
+		$email = '';
+
+		$street = get_user_meta($user->ID, '', true);
+	}
+
 if (have_posts()) :
-	while (have_posts()) : the_post(); ?>
+	while (have_posts()) : the_post(); 
+	
+	?>
 
 		<script src="https://js.stripe.com/v3/"></script>
 
@@ -20,34 +49,34 @@ if (have_posts()) :
 			<form id="membership-form">
 				<p class="input-box half">
 					<label for="member_name">Your Name:</label><br>
-					<input type="text" name="member_name" id="member_name" required>
+					<input type="text" name="member_name" id="member_name" value="<?php echo esc_attr($name); ?>" required>
 				</p>
 
 				<p class="input-box half">
 					<label for="member_email">Email Address:</label><br>
-					<input type="email" name="member_email" id="member_email" required>
+					<input type="email" name="member_email" id="member_email" value="<?php echo esc_attr($email); ?>" required>
 				</p>
 
 				<h3>Address Details</h3>
 
 				<p class="input-box full">
 					<label for="member_street">Street Address:</label><br>
-					<input type="text" name="member_street" id="member_street" required>
+					<input type="text" name="member_street" id="member_street" value="<?php echo esc_attr($street); ?>" required>
 				</p>
 
 				<p class="input-box half">
 					<label for="member_city">City:</label><br>
-					<input type="text" name="member_city" id="member_city" required>
+					<input type="text" name="member_city" id="member_city" value="<?php echo esc_attr($city); ?>" required>
 				</p>
 
 				<p class="input-box half">
 					<label for="member_state">State / Province:</label><br>
-					<input type="text" name="member_state" id="member_state" required>
+					<input type="text" name="member_state" id="member_state" value="<?php echo esc_attr($state); ?>" required>
 				</p>
 
 				<p class="input-box half">
 					<label for="member_pincode">Postal Code / Pincode:</label><br>
-					<input type="number" name="member_pincode" id="member_pincode" maxlength="6" required>
+					<input type="number" name="member_pincode" id="member_pincode" maxlength="6" value="<?php echo esc_attr($pincode); ?>" required>
 				</p>
 
 				<p class="input-box half">
@@ -55,215 +84,54 @@ if (have_posts()) :
 					<select name="member_country" id="member_country" required>
 						<option value="">Select Country</option>
 
-						<option value="Afghanistan">Afghanistan</option>
-						<option value="Albania">Albania</option>
-						<option value="Algeria">Algeria</option>
-						<option value="Andorra">Andorra</option>
-						<option value="Angola">Angola</option>
-						<option value="Antigua and Barbuda">Antigua and Barbuda</option>
-						<option value="Argentina">Argentina</option>
-						<option value="Armenia">Armenia</option>
-						<option value="Australia">Australia</option>
-						<option value="Austria">Austria</option>
-						<option value="Azerbaijan">Azerbaijan</option>
-						<option value="Bahamas">Bahamas</option>
-						<option value="Bahrain">Bahrain</option>
-						<option value="Bangladesh">Bangladesh</option>
-						<option value="Barbados">Barbados</option>
-						<option value="Belarus">Belarus</option>
-						<option value="Belgium">Belgium</option>
-						<option value="Belize">Belize</option>
-						<option value="Benin">Benin</option>
-						<option value="Bhutan">Bhutan</option>
-						<option value="Bolivia">Bolivia</option>
-						<option value="Bosnia and Herzegovina">Bosnia and Herzegovina</option>
-						<option value="Botswana">Botswana</option>
-						<option value="Brazil">Brazil</option>
-						<option value="Brunei">Brunei</option>
-						<option value="Bulgaria">Bulgaria</option>
-						<option value="Burkina Faso">Burkina Faso</option>
-						<option value="Burundi">Burundi</option>
-						<option value="Cambodia">Cambodia</option>
-						<option value="Cameroon">Cameroon</option>
-						<option value="Canada">Canada</option>
-						<option value="Cape Verde">Cape Verde</option>
-						<option value="Central African Republic">Central African Republic</option>
-						<option value="Chad">Chad</option>
-						<option value="Chile">Chile</option>
-						<option value="China">China</option>
-						<option value="Colombia">Colombia</option>
-						<option value="Comoros">Comoros</option>
-						<option value="Congo, Democratic Republic of the">Congo, Democratic Republic of the</option>
-						<option value="Congo, Republic of the">Congo, Republic of the</option>
-						<option value="Costa Rica">Costa Rica</option>
-						<option value="Croatia">Croatia</option>
-						<option value="Cuba">Cuba</option>
-						<option value="Cyprus">Cyprus</option>
-						<option value="Czech Republic">Czech Republic</option>
-						<option value="Denmark">Denmark</option>
-						<option value="Djibouti">Djibouti</option>
-						<option value="Dominica">Dominica</option>
-						<option value="Dominican Republic">Dominican Republic</option>
-						<option value="East Timor">East Timor</option>
-						<option value="Ecuador">Ecuador</option>
-						<option value="Egypt">Egypt</option>
-						<option value="El Salvador">El Salvador</option>
-						<option value="Equatorial Guinea">Equatorial Guinea</option>
-						<option value="Eritrea">Eritrea</option>
-						<option value="Estonia">Estonia</option>
-						<option value="Eswatini">Eswatini</option>
-						<option value="Ethiopia">Ethiopia</option>
-						<option value="Fiji">Fiji</option>
-						<option value="Finland">Finland</option>
-						<option value="France">France</option>
-						<option value="Gabon">Gabon</option>
-						<option value="Gambia">Gambia</option>
-						<option value="Georgia">Georgia</option>
-						<option value="Germany">Germany</option>
-						<option value="Ghana">Ghana</option>
-						<option value="Greece">Greece</option>
-						<option value="Grenada">Grenada</option>
-						<option value="Guatemala">Guatemala</option>
-						<option value="Guinea">Guinea</option>
-						<option value="Guinea-Bissau">Guinea-Bissau</option>
-						<option value="Guyana">Guyana</option>
-						<option value="Haiti">Haiti</option>
-						<option value="Honduras">Honduras</option>
-						<option value="Hungary">Hungary</option>
-						<option value="Iceland">Iceland</option>
-						<option value="India">India</option>
-						<option value="Indonesia">Indonesia</option>
-						<option value="Iran">Iran</option>
-						<option value="Iraq">Iraq</option>
-						<option value="Ireland">Ireland</option>
-						<option value="Israel">Israel</option>
-						<option value="Italy">Italy</option>
-						<option value="Ivory Coast">Ivory Coast</option>
-						<option value="Jamaica">Jamaica</option>
-						<option value="Japan">Japan</option>
-						<option value="Jordan">Jordan</option>
-						<option value="Kazakhstan">Kazakhstan</option>
-						<option value="Kenya">Kenya</option>
-						<option value="Kiribati">Kiribati</option>
-						<option value="Korea, North">Korea, North</option>
-						<option value="Korea, South">Korea, South</option>
-						<option value="Kosovo">Kosovo</option>
-						<option value="Kuwait">Kuwait</option>
-						<option value="Kyrgyzstan">Kyrgyzstan</option>
-						<option value="Laos">Laos</option>
-						<option value="Latvia">Latvia</option>
-						<option value="Lebanon">Lebanon</option>
-						<option value="Lesotho">Lesotho</option>
-						<option value="Liberia">Liberia</option>
-						<option value="Libya">Libya</option>
-						<option value="Liechtenstein">Liechtenstein</option>
-						<option value="Lithuania">Lithuania</option>
-						<option value="Luxembourg">Luxembourg</option>
-						<option value="Madagascar">Madagascar</option>
-						<option value="Malawi">Malawi</option>
-						<option value="Malaysia">Malaysia</option>
-						<option value="Maldives">Maldives</option>
-						<option value="Mali">Mali</option>
-						<option value="Malta">Malta</option>
-						<option value="Marshall Islands">Marshall Islands</option>
-						<option value="Mauritania">Mauritania</option>
-						<option value="Mauritius">Mauritius</option>
-						<option value="Mexico">Mexico</option>
-						<option value="Micronesia">Micronesia</option>
-						<option value="Moldova">Moldova</option>
-						<option value="Monaco">Monaco</option>
-						<option value="Mongolia">Mongolia</option>
-						<option value="Montenegro">Montenegro</option>
-						<option value="Morocco">Morocco</option>
-						<option value="Mozambique">Mozambique</option>
-						<option value="Myanmar">Myanmar</option>
-						<option value="Namibia">Namibia</option>
-						<option value="Nauru">Nauru</option>
-						<option value="Nepal">Nepal</option>
-						<option value="Netherlands">Netherlands</option>
-						<option value="New Zealand">New Zealand</option>
-						<option value="Nicaragua">Nicaragua</option>
-						<option value="Niger">Niger</option>
-						<option value="Nigeria">Nigeria</option>
-						<option value="North Macedonia">North Macedonia</option>
-						<option value="Norway">Norway</option>
-						<option value="Oman">Oman</option>
-						<option value="Pakistan">Pakistan</option>
-						<option value="Palau">Palau</option>
-						<option value="Panama">Panama</option>
-						<option value="Papua New Guinea">Papua New Guinea</option>
-						<option value="Paraguay">Paraguay</option>
-						<option value="Peru">Peru</option>
-						<option value="Philippines">Philippines</option>
-						<option value="Poland">Poland</option>
-						<option value="Portugal">Portugal</option>
-						<option value="Qatar">Qatar</option>
-						<option value="Romania">Romania</option>
-						<option value="Russia">Russia</option>
-						<option value="Rwanda">Rwanda</option>
-						<option value="Saint Kitts and Nevis">Saint Kitts and Nevis</option>
-						<option value="Saint Lucia">Saint Lucia</option>
-						<option value="Saint Vincent and the Grenadines">Saint Vincent and the Grenadines</option>
-						<option value="Samoa">Samoa</option>
-						<option value="San Marino">San Marino</option>
-						<option value="Sao Tome and Principe">Sao Tome and Principe</option>
-						<option value="Saudi Arabia">Saudi Arabia</option>
-						<option value="Senegal">Senegal</option>
-						<option value="Serbia">Serbia</option>
-						<option value="Seychelles">Seychelles</option>
-						<option value="Sierra Leone">Sierra Leone</option>
-						<option value="Singapore">Singapore</option>
-						<option value="Slovakia">Slovakia</option>
-						<option value="Slovenia">Slovenia</option>
-						<option value="Solomon Islands">Solomon Islands</option>
-						<option value="Somalia">Somalia</option>
-						<option value="South Africa">South Africa</option>
-						<option value="Spain">Spain</option>
-						<option value="Sri Lanka">Sri Lanka</option>
-						<option value="Sudan">Sudan</option>
-						<option value="South Sudan">South Sudan</option>
-						<option value="Suriname">Suriname</option>
-						<option value="Sweden">Sweden</option>
-						<option value="Switzerland">Switzerland</option>
-						<option value="Syria">Syria</option>
-						<option value="Taiwan">Taiwan</option>
-						<option value="Tajikistan">Tajikistan</option>
-						<option value="Tanzania">Tanzania</option>
-						<option value="Thailand">Thailand</option>
-						<option value="Togo">Togo</option>
-						<option value="Tonga">Tonga</option>
-						<option value="Trinidad and Tobago">Trinidad and Tobago</option>
-						<option value="Tunisia">Tunisia</option>
-						<option value="Turkey">Turkey</option>
-						<option value="Turkmenistan">Turkmenistan</option>
-						<option value="Tuvalu">Tuvalu</option>
-						<option value="Uganda">Uganda</option>
-						<option value="Ukraine">Ukraine</option>
-						<option value="United Arab Emirates">United Arab Emirates</option>
-						<option value="United Kingdom">United Kingdom</option>
-						<option value="United States">United States</option>
-						<option value="Uruguay">Uruguay</option>
-						<option value="Uzbekistan">Uzbekistan</option>
-						<option value="Vanuatu">Vanuatu</option>
-						<option value="Vatican City">Vatican City</option>
-						<option value="Venezuela">Venezuela</option>
-						<option value="Vietnam">Vietnam</option>
-						<option value="Yemen">Yemen</option>
-						<option value="Zambia">Zambia</option>
-						<option value="Zimbabwe">Zimbabwe</option>
+						<?php
+							$countries = [
+								"Afghanistan","Albania","Algeria","Andorra","Angola","Antigua and Barbuda","Argentina","Armenia",
+								"Australia","Austria","Azerbaijan","Bahamas","Bahrain","Bangladesh","Barbados","Belarus",
+								"Belgium","Belize","Benin","Bhutan","Bolivia","Bosnia and Herzegovina","Botswana","Brazil",
+								"Brunei","Bulgaria","Burkina Faso","Burundi","Cambodia","Cameroon","Canada","Cape Verde",
+								"Central African Republic","Chad","Chile","China","Colombia","Comoros",
+								"Congo, Democratic Republic of the","Congo, Republic of the","Costa Rica","Croatia","Cuba",
+								"Cyprus","Czech Republic","Denmark","Djibouti","Dominica","Dominican Republic","East Timor",
+								"Ecuador","Egypt","El Salvador","Equatorial Guinea","Eritrea","Estonia","Eswatini","Ethiopia",
+								"Fiji","Finland","France","Gabon","Gambia","Georgia","Germany","Ghana","Greece","Grenada",
+								"Guatemala","Guinea","Guinea-Bissau","Guyana","Haiti","Honduras","Hungary","Iceland","India",
+								"Indonesia","Iran","Iraq","Ireland","Israel","Italy","Ivory Coast","Jamaica","Japan","Jordan",
+								"Kazakhstan","Kenya","Kiribati","Korea, North","Korea, South","Kosovo","Kuwait","Kyrgyzstan",
+								"Laos","Latvia","Lebanon","Lesotho","Liberia","Libya","Liechtenstein","Lithuania","Luxembourg",
+								"Madagascar","Malawi","Malaysia","Maldives","Mali","Malta","Marshall Islands","Mauritania",
+								"Mauritius","Mexico","Micronesia","Moldova","Monaco","Mongolia","Montenegro","Morocco",
+								"Mozambique","Myanmar","Namibia","Nauru","Nepal","Netherlands","New Zealand","Nicaragua",
+								"Niger","Nigeria","North Macedonia","Norway","Oman","Pakistan","Palau","Panama","Papua New Guinea",
+								"Paraguay","Peru","Philippines","Poland","Portugal","Qatar","Romania","Russia","Rwanda",
+								"Saint Kitts and Nevis","Saint Lucia","Saint Vincent and the Grenadines","Samoa","San Marino",
+								"Sao Tome and Principe","Saudi Arabia","Senegal","Serbia","Seychelles","Sierra Leone",
+								"Singapore","Slovakia","Slovenia","Solomon Islands","Somalia","South Africa","Spain","Sri Lanka",
+								"Sudan","South Sudan","Suriname","Sweden","Switzerland","Syria","Taiwan","Tajikistan","Tanzania",
+								"Thailand","Togo","Tonga","Trinidad and Tobago","Tunisia","Turkey","Turkmenistan","Tuvalu",
+								"Uganda","Ukraine","United Arab Emirates","United Kingdom","United States","Uruguay","Uzbekistan",
+								"Vanuatu","Vatican City","Venezuela","Vietnam","Yemen","Zambia","Zimbabwe"
+							];
+
+							foreach ($countries as $country) {
+								$selected = ($member_country === $country) ? 'selected' : '';
+								echo "<option value=\"$country\" $selected>$country</option>";
+							}
+							?> 
 					</select>
 				</p>
-
+<?php if( !is_user_logged_in()){ ?>
 				<p class="input-box half">
 					<label for="member_password">Password:</label><br>
 					<input type="password" name="member_password" id="member_password" required>
 				</p>
 
-				<p class="input-box half">
+				<p class="input-box half password" style="position: relative;" >
 					<label for="member_confrim_password">Confirm Password:</label><br>
-					<input type="password" name="member_confrim_password" id="member_confrim_password" required>
+					<input type="password" name="member_confrim_password" id="member_confirm_password" required>
+					<span class="toggle-password" onclick="toggleBothPasswords(this)"><img width="15px" src="/wp-content/plugins/Membership/public/assests/icon/eye.svg" alt="show"></span>
 				</p>
-
+<?php } ?>
 				<!-- <p class="input-box full">
 			<span>Payment Details:</span>
 			<div id="card-element" style="border:1px solid #ccc; padding:10px; border-radius:4px;"></div>
@@ -315,6 +183,44 @@ if (have_posts()) :
 		?>
 
 		<script>
+			document.addEventListener("DOMContentLoaded", function () {
+
+				const stripeRadio = document.querySelector('input[name="payment_method"][value="stripe"]');
+				const paypalRadio = document.querySelector('input[name="payment_method"][value="paypal"]');
+
+				const stripeFields = document.getElementById('fields-stripe');
+				const paypalFields = document.getElementById('fields-paypal');
+
+				// ✅ Default Stripe Selected
+				stripeRadio.checked = true;
+				stripeFields.style.display = 'block';
+				paypalFields.style.display = 'none';
+
+				document.querySelectorAll('input[name="payment_method"]').forEach((radio) => {
+					radio.addEventListener('change', function () {
+
+						stripeFields.style.display = 'none';
+						paypalFields.style.display = 'none';
+
+						if (this.value === 'stripe') {
+							stripeFields.style.display = 'block';
+						}
+
+						if (this.value === 'paypal') {
+							paypalFields.style.display = 'block';
+						}
+
+						// ✅ Safe Stripe Clear
+						if (typeof card !== "undefined") {
+							card.clear();
+						}
+					});
+				});
+
+			});
+
+
+
 			const membershipType = "<?php echo $membership_type; ?>";
 			const stripePriceId = "<?php echo $stripe_price_id; ?>";
 
@@ -338,7 +244,7 @@ if (have_posts()) :
                 jQuery('#loader').show();
 				const name = document.getElementById('member_name').value;
 				const email = document.getElementById('member_email').value;
-				const password = document.getElementById('member_password').value;
+				const password = document.getElementById('member_password')?.value || null;
 				const membershipID = document.getElementById('membership_id').value;
 				const member_street = document.getElementById('member_street').value;
 				const member_city = document.getElementById('member_city').value;
@@ -346,7 +252,31 @@ if (have_posts()) :
 				const member_pincode = document.getElementById('member_pincode').value;
 				const member_country = document.getElementById('member_country').value;
 
+				const confirmPassword = document.getElementById('member_confirm_password')?.value || null;
 
+				// Password Match Validation
+				if (password !== confirmPassword) {
+					jQuery('#loader').hide();
+					alert("Password & Confirm Password do not match!");
+					return;
+				}
+
+				// Payment Feild
+				const selectedMethod = document.querySelector('input[name="payment_method"]:checked');
+				
+				if (!selectedMethod) {
+					jQuery('#loader').hide();
+					alert("Please select a payment method!");
+					return;
+				}
+
+				if (selectedMethod.value === 'paypal') {
+						jQuery('#loader').hide();
+					alert("PayPal integration is currently not available. Please use Stripe to complete your payment.");
+					return;
+				}
+				
+				
 
 
 
@@ -461,6 +391,24 @@ if (have_posts()) :
 					}
 				}
 			});
+
+
+
+			function toggleBothPasswords(icon) {
+				var pass1 = document.getElementById("member_password");
+				var pass2 = document.getElementById("member_confirm_password");
+
+				if (pass1.type === "password" && pass2.type === "password") {
+					pass1.type = "text";
+					pass2.type = "text";
+					icon.innerHTML = `<img width="15px" src="/wp-content/plugins/Membership/public/assests/icon/eye.svg" alt="hide">`;
+					
+				} else {
+					pass1.type = "password";
+					pass2.type = "password";
+					icon.innerHTML = `<img width="15px" src="/wp-content/plugins/Membership/public/assests/icon/eye-crossed.svg" alt="show">`;
+				}
+			}
 		</script>
 
 

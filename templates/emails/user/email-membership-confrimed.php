@@ -1,12 +1,14 @@
 
  <!-- Membership Confrimed -->
-    <div style="max-width: 640px; margin-left: auto; margin-right: auto; width: 100%; background-color: #ffffff; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); border-radius: 8px; overflow: hidden; margin-top: 32px; border-top: 4px solid #008000">
+    <div style="max-width: 640px; margin-left: auto; margin-right: auto; width: 100%; background-color: #fcfcfc; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); border-radius: 8px; overflow: hidden; margin-top: 32px; border-top: 4px solid #008000">
         
         <!-- Header Area (Clean Gray/White) -->
+    <?php if( $logo_url ) { ?>
         <div style="padding: 24px; padding-bottom: 0; color: #333333; text-align: center;">
             <!-- Site Logo Placeholder -->
-            <img src="https://alqimi.mydevitsolution.com/wp-content/uploads/2025/05/DoleksLabs-removebg-2048x833.png" alt="Alqimi Logo" style="width: 160px; display: block; margin: 0 auto 8px auto; border-radius: 4px;">
+            <img src="<?php echo $logo_url; ?>" alt="Alqimi Logo" style="width: 160px; display: block; margin: 0 auto 8px auto; border-radius: 4px;">
         </div>
+    <?php } ?>
 
         <!-- Body Content -->
         <div style="padding: 32px;">
@@ -30,18 +32,10 @@
             <a href="<?php echo get_site_url(); ?>/my-account" style="display: block; text-transform: uppercase; text-align: center; padding: 14px; background-color: #008000; color: #ffffff; font-weight: 700; font-size: 16px; border-radius: 6px; box-shadow: 0 4px 10px #00800045; text-decoration: none;">
                 Go to Your Dashboard
             </a>
-
-            <p style="font-size: 13px; color: #6b7280; margin-top: 24px; margin-bottom: 0; text-align: center;">
-                Your Gold Membership is active immediately. Renewal Date: [Renewal Date].
-            </p>
         </div>
         
-        <!-- Footer - Plugin Name and Links updated -->
-        <div style="background-color: #333333; padding: 16px; text-align: center; font-size: 11px; color: #cccccc; border-top: 1px solid #444444; display: flex; justify-content: space-between;">
-            <p style="margin: 0;">&copy; 2025 Alqimi. All rights reserved.</p>
-            <p style="margin-top: 0; margin-bottom: 0;">
-                <a href="<?php echo get_site_url(); ?>/support" style="color: #aaaaaa; text-decoration: underline;">Support Center</a> | 
-                <a href="<?php echo get_site_url(); ?>/privacy-policy" style="color: #aaaaaa; text-decoration: underline;">Privacy Policy</a>
-            </p>
+        <!-- Footer -->
+        <div style="background-color: #333333; padding: 16px; text-align: center; font-size: 11px; color: #cccccc; border-top: 1px solid #444444;">
+            <p style="margin: 0;">&copy; <?php echo date('Y'); ?> <?php echo esc_html($site_title); ?>. All rights reserved.</p>
         </div>
     </div>

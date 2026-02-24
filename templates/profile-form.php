@@ -158,7 +158,7 @@ if (!is_user_logged_in()):
                                             $selected = ($member_country === $country) ? 'selected' : '';
                                             echo "<option value=\"$country\" $selected>$country</option>";
                                         }
-                                        ?>
+                                        ?>  
                                     </select>
                                 </div>
                             </div>
@@ -166,20 +166,52 @@ if (!is_user_logged_in()):
                                 <div class="password-field">
                                     <label> Password
                                     </label><br>
-                                    <input type="password" name="password" value="<?php echo esc_attr($user->password); ?>"
-                                        required>
+                                    <input type="password" name="password" value="<?php echo esc_attr($user->password); ?>" id="password">
                                 </div>
 
-                                <div class="cfm-password-field">
+                                <div class="cfm-password-field password" style="position: relative;" >
                                     <label>Confirm Password
                                     </label><br>
-                                    <input type="password" name="password" value="<?php echo esc_attr($user->password); ?>"
-                                        required>
+                                    <input type="password" name="member_confirm_password" value="<?php echo esc_attr($user->password); ?>" id="member_confirm_password">
+                                    <span class="toggle-password" onclick="toggleBothPasswords(this)"><img width="15px" src="/wp-content/plugins/Membership/public/assests/icon/eye.svg" alt="show"></span>
                                 </div>
                             </div>
                         </div>
 
-                        <?php wp_nonce_field('md_profile_update_action', 'md_profile_nonce'); ?>
+                        <?php wp_nonce_field('md_profile_update_action', 'md_profile_nonce'); 
+                        
+                        if (isset($_POST['md_update_profile'])) {
+
+                        if (
+                            !isset($_POST['md_profile_nonce']) ||
+                            !wp_verify_nonce($_POST['md_profile_nonce'], 'md_profile_update_action')
+                        ) {
+                            die('Nonce Failed');
+                        }
+
+                        $user_id = get_current_user_id();
+
+                        update_user_meta($user_id, 'member_street', sanitize_text_field($_POST['street_address']));
+                        update_user_meta($user_id, 'member_city', sanitize_text_field($_POST['city']));
+                        update_user_meta($user_id, 'member_state', sanitize_text_field($_POST['state']));
+                        update_user_meta($user_id, 'member_pincode', sanitize_text_field($_POST['pincode']));
+                        update_user_meta($user_id, 'member_country', sanitize_text_field($_POST['country']));
+
+                        //  Password only if filled
+                        if (!empty($_POST['password'])) {
+                            wp_set_password($_POST['password'], $user_id);
+                        }
+
+                        wp_redirect(add_query_arg('updated', 'true', wp_get_referer()));
+                        exit;
+                    }
+
+                        
+                        
+                        ?>
+
+                        
+
                         <button type="submit" name="md_update_profile" class="profile-save-btn button button-primary">Save
                             Profile</button>
                     </form>
@@ -190,6 +222,8 @@ if (!is_user_logged_in()):
                 </div>
 
                 <?php
+
+            
             }
             ?>
 
@@ -204,16 +238,26 @@ if (!is_user_logged_in()):
                     <p><strong>Plan:</strong> <?php print_r($membership_name); ?></p>
                     <p><strong>Status:</strong> <?php echo esc_html($membership_status); ?></p>
                     <p><strong>Period Type:</strong> <?php echo esc_html($period_type); ?></p>
-                    <p><strong>Expires On:</strong> <?php echo esc_html($expire_date); ?></p>
 
-                    <?php if ($membership_id): ?>
-                        <a href="/membership-upgrade" class="button">Upgrade Membership</a>
-                        <button type="submit" data-sid="<?php echo $subscription_id ?>"  data-user_id="<?php echo $user_id ?>"   id="membership_cancel"
-                            name="md_cancel_membership" class="button md-cancel-btn">
-                            Cancel Membership
-                        </button>
+                    <?php if ($period_type != 'one_time') : ?>
+                        <p><strong>Expires On:</strong> <?php echo esc_html($expire_date); ?></p>
+                    <?php endif; ?>
 
-                    <?php else: ?>
+                    <div style="display: flex;">
+                        <?php if ($membership_id): ?>
+                            <a href="/membership-level/" class="button">Upgrade Membership</a>
+    
+                            <?php if ($period_type != 'one_time') : ?>
+    
+                                <button type="submit" data-sid="<?php echo $subscription_id ?>"  data-user_id="<?php echo $user_id ?>"   id="membership_cancel"
+                                    name="md_cancel_membership" class="button md-cancel-btn">
+                                    Cancel Membership
+                                </button>
+                            <?php endif; ?>
+    
+                        </div>
+                        <?php else: ?>
+
                         <a href="/membership-levels" class="button">Choose a Membership</a>
                     <?php endif; ?>
                 </div>
@@ -250,6 +294,22 @@ if (!is_user_logged_in()):
                     });
 
                 });
+
+                    function toggleBothPasswords(icon) {
+                    var pass1 = document.getElementById("password");
+                    var pass2 = document.getElementById("member_confirm_password");
+
+                    if (pass1.type === "password" && pass2.type === "password") {
+                        pass1.type = "text";
+                        pass2.type = "text";
+                        icon.innerHTML = `<img width="15px" src="/wp-content/plugins/Membership/public/assests/icon/eye.svg" alt="hide">`;
+                        
+                    } else {
+                        pass1.type = "password";
+                        pass2.type = "password";
+                        icon.innerHTML = `<img width="15px" src="/wp-content/plugins/Membership/public/assests/icon/eye-crossed.svg" alt="show">`;
+                    }
+                }
             </script>
 
             <?php
@@ -273,8 +333,8 @@ if (!is_user_logged_in()):
                                 foreach ($payments as $pay):
                                     echo '<tr>';
                                     echo '<td>' . esc_html(date('F j, Y', strtotime($pay->created_at))) . '</td>';
-                                    echo '<td>' . esc_html(ucfirst($pay->method)) . '</td>';
-                                    echo '<td>$' . esc_html($pay->amount) . '</td>';
+                                    echo '<td>' . esc_html(ucfirst($pay->gateway)) . '</td>';
+                                    echo '<td>$' . esc_html($pay->price) . '</td>';
                                     echo '<td>' . esc_html($pay->status) . '</td>';
                                     echo '</tr>';
                                 endforeach;
