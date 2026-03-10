@@ -29,7 +29,11 @@ if (!is_user_logged_in()):
         $date_created = $date[0];
         $period_type = $membership_info[0]->period_type;
         $curr_date = date('Y-m-d');
-        $expire_date = date('Y-m-d', strtotime($curr_date . '+30 days'));
+		if($date_created){
+        $expire_date = date('Y-m-d', strtotime($date_created . '+30 days'));
+		} else {
+		$expire_date = '';	
+		}
     }
 
 
@@ -234,14 +238,17 @@ if (!is_user_logged_in()):
             if ($_GET['setting'] === 'membershipinfo') { ?>
                 <div class="md-profile-membershipinfo setting-menu-listing">
                     <h3>Membership Information</h3>
-
-                    <p><strong>Plan:</strong> <?php print_r($membership_name); ?></p>
+<?php if (!empty($membership_id)) : ?>
+    <p><strong>Plan:</strong> <?php echo esc_html($membership_name); ?></p>
+<?php else : ?>
+    <p>No membership active in your account.</p>
+<?php endif; ?>
                     <p><strong>Status:</strong> <?php echo esc_html($membership_status); ?></p>
                     <p><strong>Period Type:</strong> <?php echo esc_html($period_type); ?></p>
 
-                    <?php if ($period_type != 'one_time') : ?>
-                        <p><strong>Expires On:</strong> <?php echo esc_html($expire_date); ?></p>
-                    <?php endif; ?>
+                    <?php if ($period_type != 'one_time' && $membership_status != 'cancelled') : ?>
+    <p><strong>Expires On:</strong> <?php echo esc_html($expire_date); ?></p>
+<?php endif; ?>
 
                     <div style="display: flex;">
                         <?php if ($membership_id): ?>
@@ -386,10 +393,15 @@ function get_membership_info()
     global $wpdb;
 
     $table = $wpdb->prefix . "md_subscriptions";
-
     $user = get_current_user_id();
 
-    $result = $wpdb->get_results("SELECT * FROM $table where user_id = $user");
+    $result = $wpdb->get_results(
+        $wpdb->prepare(
+            "SELECT * FROM $table WHERE user_id = %d AND status != %s",
+            $user,
+            'cancelled'
+        )
+    );
 
     return $result;
 }

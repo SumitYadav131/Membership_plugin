@@ -283,7 +283,7 @@ class MemberajaxHandler
                 $user_id
             )
         );
-
+		
         $registration_formatted = $registration_date ? date('d-m-Y', strtotime($registration_date)) : 'N/A';
 
 
@@ -427,7 +427,18 @@ class MemberajaxHandler
                 $user_id
             )
         );
-
+		 $subscription_id = intval($_POST['sus_id']);
+ $wpdb->query(
+	 $wpdb->prepare(
+	"UPDATE $table 
+	SET status = %s 
+	WHERE user_id = %d 
+	ORDER BY id DESC 
+	LIMIT 1",
+	'cancelled',
+	$user_id
+	 )
+ );
 
         // Get Site Logo URL
         $custom_logo_id = get_theme_mod('custom_logo');
